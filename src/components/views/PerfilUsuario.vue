@@ -28,17 +28,20 @@
           <label>Nombre:</label>
           <input v-if="isEditing" v-model="user.username" type="text" />
           <span v-else>{{ user.username }}</span>
+          <div v-if="errors.username" class="error">{{ errors.username }}</div>
 
           <label>Apellido Paterno:</label>
           <input v-if="isEditing" v-model="user.lastName" type="text" />
           <span v-else>{{ user.lastName }}</span>
+          <div v-if="errors.lastName" class="error">{{ errors.lastName }}</div>
 
           <label>Apellido Materno:</label>
           <input v-if="isEditing" v-model="user.secondLastName" type="text" />
           <span v-else>{{ user.secondLastName }}</span>
+          <div v-if="errors.secondLastName" class="error">{{ errors.secondLastName }}</div>
 
           <label>Tipo de Sangre:</label>
-          <select v-if="isEditing" v-model="user.bloodType">
+          <select v-if="isEditing" v-model="user.bloodType" class="blood-type">
             <option value="A+">A+</option>
             <option value="A-">A-</option>
             <option value="B+">B+</option>
@@ -51,16 +54,28 @@
           <span v-else>{{ user.bloodType }}</span>
 
           <label>Email:</label>
-          <input v-if="isEditing" v-model="user.email" type="email" />
+          <input v-if="isEditing" v-model="user.email" type="email" class="email-field"  />
           <span v-else>{{ user.email }}</span>
+          <div v-if="errors.email" class="error">{{ errors.email }}</div>
 
           <label>Alergias:</label>
           <input v-if="isEditing" v-model="user.allergies" type="text" />
           <span v-else>{{ user.allergies }}</span>
+          <div v-if="errors.allergies" class="error">{{ errors.allergies }}</div>
+
+          <label>Teléfono:</label>
+          <input v-if="isEditing" v-model="user.phone" type="text" />
+          <span v-else>{{ user.phone }}</span>
+          <div v-if="errors.phone" class="error">{{ errors.phone }}</div>
+
+          <label>NSS:</label>
+          <input v-if="isEditing" v-model="user.nss" type="text" />
+          <span v-else>{{ user.nss }}</span>
+          <div v-if="errors.nss" class="error">{{ errors.nss }}</div>
 
           <!-- Datos no editables (como el ID de usuario) -->
           <label>Carrera:</label>
-          <span>{{ user.degree }}</span> <!-- Este campo no es editable -->
+          <span>{{ user.degree }}</span>
           <label>Número de Cuenta:</label>
           <span>{{ user.accountNumber }}</span>
           <label>Tipo de usuario:</label>
@@ -87,92 +102,126 @@
 </template>
 
 <script>
-import { mapGetters, mapActions  } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: "PerfilUsuario",
   data() {
     return {
-      defaultImage: 'https://via.placeholder.com/150', // Imagen predeterminada si no hay imagen de perfil
-      imageError: null, // Para manejar errores de tipo de archivo
-      isEditing: false, // Estado para verificar si se está editando el perfil
-      originalUser: null, // Para almacenar el estado original del usuario y restaurarlo si es necesario
+      defaultImage: 'https://via.placeholder.com/150',
+      imageError: null,
+      isEditing: false,
+      originalUser: null,
+      errors: {} // Contendrá los errores de validación
     };
   },
   computed: {
     ...mapGetters(['getUser']),
     user() {
-      return this.getUser; // Accede al usuario desde el store
+      return this.getUser;
     },
     isAuthenticated() {
-      return !!this.user; // Verifica si el usuario está autenticado
+      return !!this.user;
     }
   },
   created() {
-    // Verifica si el usuario está autenticado al cargar la página
     if (!this.user && localStorage.getItem('user')) {
       const storedUser = JSON.parse(localStorage.getItem('user'));
-      this.$store.commit('setUser', storedUser);  // Cargar el usuario del localStorage al store
+      this.$store.commit('setUser', storedUser);
     }
-    this.originalUser = { ...this.user }; // Guardar una copia del usuario original
+    this.originalUser = { ...this.user };
   },
   methods: {
-  ...mapActions(['updateUser', 'logout']),
-  editProfile() {
-    this.isEditing = true; // Cambiar el estado a edición
-  },
-  saveProfile() {
-    this.updateUser(this.user);
-    // Guardar los cambios
-    this.$store.commit('setUser', { ...this.user });
+    ...mapActions(['updateUser', 'logout']),
+    editProfile() {
+      this.isEditing = true;
+    },
+    saveProfile() {
+      let isValid = true;
+      this.errors = {}; // Limpiar los errores previos
 
-    // Ocultar el campo de edición
-    this.isEditing = false;
+      // Validación nombre de usuario
+      const lettersRegex = /^[A-Za-z\s]+$/;
+      if (!this.user.username || !lettersRegex.test(this.user.username)) {
+        this.errors.username = "El nombre de usuario solo debe contener letras.";
+        isValid = false;
+      }
+       // Validar alergias (opcional, pero solo letras si se ingresa)
+       if (this.user.allergies && !lettersRegex.test(this.user.allergies)) {
+        this.errors.allergies = "Las alergias deben contener solo letras.";
+        isValid = false;
+      }
 
-    // Regresar a los botones de "Editar" y "Cerrar sesión"
-    localStorage.setItem('user', JSON.stringify(this.user)); // Guardar cambios en localStorage
-  },
-  cancelEdit() {
-    // Restaurar el usuario al estado original (antes de editar)
-    this.$store.commit('setUser', { ...this.originalUser });
-    this.isEditing = false; // Volver al estado sin edición
+      // Validación apellidos
+      if (!this.user.lastName || !lettersRegex.test(this.user.lastName)) {
+        this.errors.lastName = "El apellido paterno solo debe contener letras.";
+        isValid = false;
+      }
+      if (!this.user.secondLastName || !lettersRegex.test(this.user.secondLastName)) {
+        this.errors.secondLastName = "El apellido materno solo debe contener letras.";
+        isValid = false;
+      }
 
-    // Restaurar los datos en el localStorage
-    localStorage.setItem('user', JSON.stringify(this.originalUser)); 
-  },
-  logout() {
-    this.$store.dispatch('logout');
-    localStorage.removeItem('user'); // Limpia la sesión persistente
-    this.$router.push('/login'); // Redirige al login después de hacer logout
-  },
-  triggerFileInput() {
-    // Solo permitir la selección de archivo si estamos en modo de edición
-    if (this.isEditing) {
-      this.$refs.fileInput.click();
-    }
-  },
-  handleImageUpload(event) {
-    const file = event.target.files[0];
-    
-    if (file) {
-      // Validación de tipo MIME para imágenes
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
-      
-      if (validImageTypes.includes(file.type)) {
-        // Si el tipo de archivo es válido, lo procesamos
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.$store.commit('setUser', { ...this.user, profileImage: e.target.result });
-          this.imageError = null; // Limpiar el error si la imagen es válida
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // Si el archivo no es una imagen válida, mostramos un mensaje de error
-        this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
+      // Validación email
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+      if (!this.user.email || !emailRegex.test(this.user.email)) {
+        this.errors.email = "El correo electrónico debe ser válido.";
+        isValid = false;
+      }
+
+      // Validación teléfono
+      const phoneRegex = /^\d{10}$/;
+      if (!this.user.phone || !phoneRegex.test(this.user.phone)) {
+        this.errors.phone = "El número de teléfono debe contener 10 dígitos numéricos.";
+        isValid = false;
+      }
+
+      // Validación NSS
+      const nssRegex = /^\d{11}$/;
+      if (!this.user.nss || !nssRegex.test(this.user.nss)) {
+        this.errors.nss = "El NSS debe contener 11 dígitos.";
+        isValid = false;
+      }
+
+      if (isValid) {
+        this.updateUser(this.user);
+        this.$store.commit('setUser', { ...this.user });
+        this.isEditing = false;
+        localStorage.setItem('user', JSON.stringify(this.user));
+      }
+    },
+    cancelEdit() {
+      this.$store.commit('setUser', { ...this.originalUser });
+      this.isEditing = false;
+      localStorage.setItem('user', JSON.stringify(this.originalUser));
+    },
+    logout() {
+      this.$store.dispatch('logout');
+      localStorage.removeItem('user');
+      this.$router.push('/login');
+    },
+    triggerFileInput() {
+      if (this.isEditing) {
+        this.$refs.fileInput.click();
+      }
+    },
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+        if (validImageTypes.includes(file.type)) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.$store.commit('setUser', { ...this.user, profileImage: e.target.result });
+            this.imageError = null;
+          };
+          reader.readAsDataURL(file);
+        } else {
+          this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
+        }
       }
     }
   }
-},
 };
 </script>
 
@@ -227,30 +276,44 @@ h2 {
 }
 
 .editable-fields {
-  margin-bottom: 20px;
+  margin-bottom: 4px;
 }
 
+.editable-fields label,
+.editable-fields select,
+.editable-fields input {
+  display: block;  /* Forzar los elementos a estar en bloques (en línea no estarán uno encima del otro) */
+}
+
+/* Reducir el margen entre la etiqueta y el campo de texto */
 .editable-fields label {
-  font-weight: bold;
-  margin-top: 10px;
+  margin-bottom: 2px; /* Menos margen entre la etiqueta y el campo */
+}
+
+/* Aumentar el margen entre los campos para que se separen más */
+.editable-fields input,
+.editable-fields select {
+  margin-bottom: 12px; /* Más espacio después de cada campo de texto */
+  padding: 8px; /* Espacio dentro de la caja de texto */
+  box-sizing: border-box; /* Asegura que padding se incluya en el ancho */
+  width: 100%;
 }
 
 .editable-fields input {
   width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border-radius: 4px;
   border: 1px solid #ccc;
-  box-sizing: border-box;
+ 
 }
 
 .editable-fields span {
   display: block;
+  margin-bottom: 12px; 
   padding: 8px;
   background-color: #f4f4f4;
   border-radius: 4px;
   border: 1px solid #ddd;
   margin-top: 5px;
+  box-sizing: border-box;
 }
 
 button {

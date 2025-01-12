@@ -33,6 +33,12 @@
         <input type="text" id="accountNumber" v-model="formData.accountNumber" required />
         <p v-if="errors.accountNumber" class="error-message">{{ errors.accountNumber }}</p>
       </div>
+      <div class="form-group">
+        <label for="phone">Teléfono:</label>
+        <input type="text" id="phone" v-model="formData.phone" required />
+        <p v-if="errors.phone" class="error-message">{{ errors.phone }}</p>
+      </div>
+      
 
       <!-- Campo para Tipo de Persona -->
       <div class="form-group">
@@ -56,6 +62,11 @@
             <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
           </select>
         </div>
+        <div class="form-group">
+        <label for="nss">NSS:</label>
+        <input type="text" id="nss" v-model="formData.nss" required />
+        <p v-if="errors.nss" class="error-message">{{ errors.nss }}</p>
+      </div>
       </div>
 
       <!-- Campo de alergias -->
@@ -89,10 +100,12 @@ export default {
         degree: "",
         personType: "",
         bloodType: "",
+        nss:"",
         email: "",
         password: "",
         accountNumber: "",
         allergies: "",
+        phone:"",
       },
       errors: {},
       degrees: ["ICO", "IEL", "IME", "ICI", "ISES", "IIA"],
@@ -108,7 +121,7 @@ export default {
       this.errors = {};
 
       // Validar nombre de usuario (solo letras)
-      const lettersRegex = /^[A-Za-z]+$/;
+      const lettersRegex = /^[A-Za-z\s]+$/;
       if (!this.formData.username) {
         this.errors.username = "El nombre de usuario es obligatorio.";
         isValid = false;
@@ -171,6 +184,24 @@ export default {
         this.errors.allergies = "Las alergias deben contener solo letras.";
         isValid = false;
       }
+      // Validar número de teléfono (solo números, 10 dígitos)
+      const phoneRegex = /^\d{10}$/;
+      if (!this.formData.phone) {
+        this.errors.phone = "El número de teléfono es obligatorio.";
+        isValid = false;
+      } else if (!phoneRegex.test(this.formData.phone)) {
+        this.errors.phone = "El número de teléfono debe contener exactamente 10 dígitos numéricos.";
+        isValid = false;
+      }
+      // Validar número de seguro social (solo números, 11 dígitos)
+      const nssRegex = /^\d{11}$/;
+      if (!this.formData.nss) {
+        this.errors.nss = "El número de seguro social es obligatorio.";
+        isValid = false;
+      } else if (!nssRegex.test(this.formData.nss)) {
+        this.errors.nss = "El número de seguro social debe contener exactamente 11 dígitos numéricos.";
+        isValid = false;
+      }
 
       return isValid;
     },
@@ -197,7 +228,7 @@ export default {
 
     async checkAccountNumber(accountNumber) {
       try {
-        // Aquí se obtiene directamente la respuesta sin asignar a 'response'
+        // Aquí corregimos la URL de la solicitud axios
         const { data } = await axios.get(`http://localhost:5000/usuarios?accountNumber=${accountNumber}`);
         
         if (data.length > 0) {
