@@ -250,7 +250,6 @@ export default {
 </script>
 
 <style scoped>
-/* Colores principales */
 :root {
   --primary-green: #4caf50;
   --dark-green: #388e3c;
@@ -259,7 +258,6 @@ export default {
   --text-gray: #616161;
 }
 
-/* General */
 .inscripcion-container {
   font-family: 'Arial', sans-serif;
   padding: 20px;
