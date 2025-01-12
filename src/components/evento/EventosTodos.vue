@@ -30,7 +30,8 @@ export default {
   },
   methods: {
     openDetail(id) {
-      this.$router.push(`/eventos/${id}`);
+      console.log(`Redirigiendo al evento con id: ${id}`);
+      this.$router.push(`/eventos/${id}`);  // Navegar a la página del evento con el id
     },
     async fetchEventos() {
       try {
@@ -50,40 +51,37 @@ export default {
 </script>
 
 <style scoped>
-/* Contenedor principal más ancho */
 .eventos-container {
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-family: 'Arial', sans-serif;
-  max-width: 1400px; /* Cambia el ancho máximo a un valor mayor (ajústalo según tu necesidad) */
-  width: 90%; /* Hace que ocupe el 90% del ancho de la pantalla */
-  margin: 20px auto; /* Centra el contenedor */
+  max-width: 1400px; 
+  width: 90%; 
+  margin: 20px auto;
 }
 
 
-/* Lista de eventos */
 .eventos-lista {
   max-height: 400px;
   overflow-y: auto;
-  scrollbar-width: none; /* Oculta el scroll en Firefox */
-  -ms-overflow-style: none; /* Oculta el scroll en IE */
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
   gap: 0;
 }
 
 .eventos-lista::-webkit-scrollbar {
-  display: none; /* Oculta el scroll en Chrome, Safari y Edge */
+  display: none; 
 }
 
 
-/* Elemento de evento */
 .evento-item {
   display: flex;
-  align-items: center; /* Centra verticalmente la descripción */
-  justify-content: flex-start; /* Asegura que los elementos se alineen correctamente */
-  padding: 10px; /* Reduce el espacio interno del rectángulo */
-  margin: 10px 0; /* Reduce el espacio entre los elementos */
+  align-items: center; 
+  justify-content: flex-start; 
+  padding: 10px; 
+  margin: 10px 0; 
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #ffffff;
@@ -92,35 +90,30 @@ export default {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Imágenes */
 .evento-imagen {
-  width: 100px; /* Reduce el tamaño de la imagen */
+  width: 100px; 
   height: 100px;
   border-radius: 8px;
   object-fit: cover;
 }
 
-/* Contenedor de detalles */
 .evento-detalle {
-  padding-left: 15px; /* Reduce el espacio entre la imagen y el texto */
+  padding-left: 15px; 
 }
 
-/* Títulos */
 .evento-titulo {
-  font-size: 1em; /* Reduce el tamaño de la fuente */
-  margin: 0 0 5px; /* Reduce el espacio inferior */
+  font-size: 1em; 
+  margin: 0 0 5px; 
 }
 
-/* Fecha */
 .evento-fecha {
-  font-size: 0.85em; /* Reduce el tamaño de la fuente */
-  margin: 0 0 5px; /* Reduce el espacio inferior */
+  font-size: 0.85em; 
+  margin: 0 0 5px; 
 }
 
-/* Descripción */
 .evento-descripcion {
-  font-size: 0.9em; /* Reduce el tamaño de la fuente */
-  line-height: 1.2; /* Ajusta el espacio entre líneas */
+  font-size: 0.9em; 
+  line-height: 1.2; 
 }
 
 </style>

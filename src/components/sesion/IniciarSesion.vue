@@ -44,26 +44,31 @@ export default {
     async handleLogin() {
       this.errorMessage = ""; // Reinicia el mensaje de error
       try {
-        // Llamada a la API para obtener el usuario
-        const response = await axios.get("http://localhost:5000/usuarios", {
-          params: { email: this.email, accountNumber: this.accountNumber },
-        });
+        // Llamada a la API para obtener usuarios y administradores
+        const [usuariosResponse, administradoresResponse] = await Promise.all([
+          axios.get("http://localhost:5000/usuarios"),
+          axios.get("http://localhost:5000/administradores"),
+        ]);
 
-        // Busca al usuario en la respuesta
-        const user = response.data.find(
+        // Busca el usuario en los dos arrays
+        const usuario = usuariosResponse.data.find(
           u => u.email === this.email && u.accountNumber === this.accountNumber
+        );
+        const administrador = administradoresResponse.data.find(
+          a => a.email === this.email && a.accountNumber === this.accountNumber
         );
 
         // Verifica que las credenciales coincidan
-        if (user && user.password === this.password) {
-          // Si las credenciales son correctas, actualiza el estado en Vuex
-          this.$store.dispatch('login', user); // Actualiza el estado de Vuex
-          
-          // Guarda el usuario en el almacenamiento local si es necesario
-          localStorage.setItem('user', JSON.stringify(user)); // O cualquier otro mecanismo para persistir la sesión
-
-          // Redirige al perfil del usuario
+        if (usuario && usuario.password === this.password) {
+          // Si es un usuario, almacena el tipo como 'Usuario'
+          this.$store.dispatch('login', { user: usuario, userType: 'Usuario' });
+          localStorage.setItem('user', JSON.stringify(usuario));
           this.$router.push('/perfilUsuario');
+        } else if (administrador && administrador.password === this.password) {
+          // Si es un administrador, almacena el tipo como 'Administrador'
+          this.$store.dispatch('login', { user: administrador, userType: 'Administrador' });
+          localStorage.setItem('user', JSON.stringify(administrador));
+          this.$router.push('/perfilAdministrador');
         } else {
           this.errorMessage = "Credenciales incorrectas.";
         }
@@ -79,8 +84,8 @@ export default {
 };
 </script>
 
+
 <style scoped>
-/* Estilos para la vista de inicio de sesión */
 .auth-container {
   display: flex;
   flex-direction: column;
@@ -119,7 +124,9 @@ label {
   color: #555;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 10px;
   margin-top: 5px;

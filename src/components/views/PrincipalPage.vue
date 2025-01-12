@@ -25,37 +25,33 @@ export default {
 
 
 <style scoped>
-/* Contenedor principal */
 .contenido-principal {
   padding: 20px;
   background-color: #f5f5f5;
-  text-align: center; /* Centra todo el contenido */
+  text-align: center; 
 }
 
-/* Título */
 h1 {
   font-size: 2em;
   color: #2e7d32;
   margin-bottom: 20px;
 }
 
-/* Sección del carrusel */
 .carousel-section {
   margin: 0 auto;
-  max-width: 1200px; /* Limita el ancho del carrusel */
+  max-width: 1200px; 
 }
 
-/* Contenido del carrusel */
 .carousel-wrapper {
   display: flex;
-  justify-content: center; /* Centra los ítems del carrusel */
-  gap: 20px; /* Espaciado entre ítems */
+  justify-content: center; 
+  gap: 20px; 
 }
 
 .carousel-buttons {
   margin-top: 15px;
   display: flex;
-  justify-content: center; /* Centra los botones */
+  justify-content: center; 
   gap: 10px;
 }
 

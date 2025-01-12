@@ -2,7 +2,6 @@
   <div v-if="event" class="event-container">
     <div class="event-card">
       <h1 class="event-title">{{ event.name }}</h1>
-      <p class="event-id">Evento: {{ event.id }}</p>
 
       <div class="event-image">
         <img :src="event.image" alt="Imagen del evento" />
@@ -15,7 +14,15 @@
       <!-- Botones -->
       <div class="button-container">
         <button class="back-button" @click="goBack">Ir a eventos</button>
-        <button class="signup-button" @click="inscribir">Inscribirse</button>
+
+        <!-- Mostrar botón "Inscribirse" solo si team_size tiene un número válido -->
+        <button
+          class="signup-button"
+          v-if="isTeamSizeValid"
+          @click="inscribir"
+        >
+          Inscribirse
+        </button>
       </div>
     </div>
   </div>
@@ -28,7 +35,9 @@
 
   <div v-else>
     <div class="error-container">
-      <p class="error-message">Evento no encontrado o hubo un error al cargar los detalles.</p>
+      <p class="error-message">
+        Evento no encontrado o hubo un error al cargar los detalles.
+      </p>
       <p class="error-info">{{ error }}</p>
     </div>
   </div>
@@ -38,49 +47,63 @@
 export default {
   data() {
     return {
-      event: null, // Para almacenar el evento seleccionado
-      error: null, // Para manejar posibles errores
-      loading: true
+      event: null, // Evento cargado
+      error: null, // Mensaje de error
+      loading: true, // Estado de carga
     };
   },
 
+  computed: {
+    // Computada para validar si team_size es un número
+    isTeamSizeValid() {
+      return typeof this.event?.team_size === "number";
+    },
+  },
+
   created() {
-    const eventId = this.$route.params.id;  // Obtener el ID del evento desde la URL
-    this.fetchEvent(eventId);  // Llamar a fetchEvent pasando el ID
+    const eventId = this.$route.params.id; // Obtener el ID del evento desde la URL
+    this.fetchEvent(eventId); // Llamar a fetchEvent pasando el ID
   },
 
   methods: {
     async fetchEvent(id) {
       try {
-        // Realiza la solicitud para obtener el evento específico por su ID
-        const response = await fetch(`http://localhost:5000/events/${id}`); // URL de la API para obtener un evento por ID
+        const response = await fetch(`http://localhost:5000/events/${id}`); // URL de la API
         const data = await response.json();
 
         if (data) {
-          this.event = data;  // Asignamos el evento recibido a 'event'
+          this.event = data;
           this.loading = false;
         } else {
-          this.error = 'Evento no encontrado';
+          this.error = "Evento no encontrado";
           this.loading = false;
-          console.error(this.error);
         }
       } catch (err) {
-        this.error = 'Error al obtener el evento: ' + err.message;
-        this.loading = false;  // Desactiva el estado de carga
-        console.error(this.error);
+        this.error = "Error al obtener el evento: " + err.message;
+        this.loading = false;
       }
     },
+
     goBack() {
-      // Regresar a la página de lista de eventos
-      this.$router.push('/eventos');
+      // Regresar a la lista de eventos
+      this.$router.push("/eventos");
     },
+
     inscribir() {
-      // Acción de inscripción
-      alert("Te has inscrito en el evento");
-    }
-  }
+      const isAuthenticated = this.$store.getters.isAuthenticated; // Autenticación con Vuex
+      if (isAuthenticated) {
+        this.$router.push({
+          name: "InscripcionEquipo",
+          params: { id: this.event.id },
+        });
+      } else {
+        this.$router.push("/login");
+      }
+    },
+  },
 };
 </script>
+
 
 <style scoped>
 .event-container {
@@ -94,13 +117,13 @@ export default {
 .event-card {
   background-color: #fff;
   border-radius: 10px;
-  width: 100%; /* Asegura que la tarjeta ocupe el 100% del contenedor */
+  width: 100%; 
   max-width: 1200px;
   min-width: 800px;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
   padding: 20px;
   transition: transform 0.3s ease;
-  position: relative; /* Necesario para posicionar los botones */
+  position: relative; 
   display: flex;
   flex-direction: column;
 }
@@ -109,7 +132,7 @@ export default {
 }
 
 .event-title {
-  font-size: 2.5rem; /* Título más grande */
+  font-size: 2.5rem; 
   font-weight: bold;
   color: #333;
   text-align: center;
@@ -124,11 +147,11 @@ export default {
 }
 
 .event-image img {
-  width: 100%; /* Asegura que la imagen ocupe el 100% del contenedor */
-  height: auto; /* Mantiene la proporción de la imagen */
-  max-height: 400px; /* Limita la altura máxima */
-  max-width: 100%; /* Asegura que la imagen no exceda el contenedor */
-  object-fit: contain; /* Ajusta la imagen sin recortarla */
+  width: 100%; 
+  height: auto; 
+  max-height: 400px; 
+  max-width: 100%; 
+  object-fit: contain; 
   border-radius: 10px;
   margin-bottom: 20px;
 }
@@ -143,38 +166,38 @@ export default {
 
 .button-container {
   display: flex;
-  justify-content: space-between; /* Distribuye los botones, dejando uno a la izquierda y el otro centrado */
+  justify-content: space-between; 
   align-items: center;
-  width: 100%; /* Asegura que el contenedor ocupe todo el ancho disponible */
+  width: 100%; 
   margin-top: 20px;
 }
 
 .back-button {
-  background-color: #28a745; /* Botón verde */
+  background-color: #28a745; 
   color: white;
   border: none;
-  padding: 6px 12px; /* Botón más pequeño */
+  padding: 6px 12px;
   font-size: 0.9rem;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  position: absolute; /* Hace que el botón se posicione en relación a su contenedor */
-  top: 10px; /* Lo coloca en la parte superior */
-  left: 10px; /* Lo coloca en la parte izquierda */
+  position: absolute; 
+  top: 10px; 
+  left: 10px; 
 }
 
 .signup-button {
-  background-color: #32cd32; /* Botón verde brillante */
+  background-color: #32cd32; 
   color: white;
   border: none;
-  padding: 15px 30px;  /* Botón más grande */
+  padding: 15px 30px; 
   font-size: 1.3rem;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  width: 200px; /* Fija un ancho para el botón */
-  margin: 20px auto 0; /* Centrado en la parte inferior con margen superior */
-  display: block; /* Asegura que se comporte como bloque para centrarlo */
+  width: 200px; 
+  margin: 20px auto 0; 
+  display: block; 
 }
 
 

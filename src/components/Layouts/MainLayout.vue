@@ -27,24 +27,21 @@ export default {
 </script>
   
 <style>
-/* Diseño principal */
 #app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Altura mínima para ocupar toda la pantalla */
+  min-height: 100vh; 
   margin: 0;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   color: #2c3e50;
 }
 
-/* Contenido principal entre header y footer */
 .main-content {
-  flex: 1; /* Ocupa el espacio restante entre header y footer */
-  padding: 20px; /* Espaciado interno */
-  background-color: #f5f5f5; /* Color de fondo opcional */
+  flex: 1; 
+  padding: 20px; 
+  background-color: #f5f5f5; 
 }
 
-/* Títulos secundarios */
 h2 {
   font-size: 24px;
   margin-bottom: 10px;

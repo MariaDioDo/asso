@@ -13,7 +13,6 @@ export default {
 
   
   <style scoped>
-  /* Estilos específicos para el layout del Dashboard */
   .dashboard-layout {
     padding: 20px;
   }

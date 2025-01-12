@@ -18,10 +18,10 @@ import EventosTodos from '../evento/EventosTodos.vue';
   </script>
   <style scoped>
   .eventos-container {
-    padding: 0; /* Elimina el relleno extra */
-    background-color: transparent; /* Usa un fondo transparente */
-    box-shadow: none; /* Elimina sombras */
-    border-radius: 0; /* Sin bordes redondeados */
+    padding: 0; 
+    background-color: transparent; 
+    box-shadow: none; 
+    border-radius: 0; 
   }
   .eventos-container h1 {
   font-size: 2em;

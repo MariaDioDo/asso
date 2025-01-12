@@ -38,7 +38,7 @@
         <input type="text" id="phone" v-model="formData.phone" required />
         <p v-if="errors.phone" class="error-message">{{ errors.phone }}</p>
       </div>
-      
+
 
       <!-- Campo para Tipo de Persona -->
       <div class="form-group">
@@ -47,26 +47,22 @@
           <option v-for="type in personTypes" :key="type" :value="type">{{ type }}</option>
         </select>
       </div>
-
-      <!-- Campos que dependen del tipo de persona -->
-      <div v-if="formData.personType !== 'Administrador'">
-        <div class="form-group">
-          <label for="degree">Licenciatura:</label>
-          <select id="degree" v-model="formData.degree" required>
-            <option v-for="degree in degrees" :key="degree" :value="degree">{{ degree }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="bloodType">Tipo de Sangre:</label>
-          <select id="bloodType" v-model="formData.bloodType" required>
-            <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
-          </select>
-        </div>
-        <div class="form-group">
+      <div class="form-group">
+        <label for="degree">Licenciatura:</label>
+        <select id="degree" v-model="formData.degree" required>
+          <option v-for="degree in degrees" :key="degree" :value="degree">{{ degree }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="bloodType">Tipo de Sangre:</label>
+        <select id="bloodType" v-model="formData.bloodType" required>
+          <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label for="nss">NSS:</label>
         <input type="text" id="nss" v-model="formData.nss" required />
         <p v-if="errors.nss" class="error-message">{{ errors.nss }}</p>
-      </div>
       </div>
 
       <!-- Campo de alergias -->
@@ -86,7 +82,7 @@
     </p>
   </div>
 </template>
-  
+
 <script>
 import axios from 'axios';
 
@@ -100,16 +96,16 @@ export default {
         degree: "",
         personType: "",
         bloodType: "",
-        nss:"",
         email: "",
         password: "",
         accountNumber: "",
         allergies: "",
-        phone:"",
+        phone: "",
+        nss: "",
       },
       errors: {},
       degrees: ["ICO", "IEL", "IME", "ICI", "ISES", "IIA"],
-      personTypes: ["Estudiante", "Profesor", "Academico", "Administrador"],
+      personTypes: ["Estudiante", "Profesor", "Academico"],
       bloodTypes: ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"],
       isSubmitting: false,
       errorMessage: "",
@@ -119,6 +115,7 @@ export default {
     async validateForm() {
       let isValid = true;
       this.errors = {};
+      console.log('Validando el formulario...');
 
       // Validar nombre de usuario (solo letras)
       const lettersRegex = /^[A-Za-z\s]+$/;
@@ -154,7 +151,28 @@ export default {
       } else if (!emailRegex.test(this.formData.email)) {
         this.errors.email = "El correo electrónico debe tener un formato válido (ejemplo@dominio.com).";
         isValid = false;
+      } else if (await this.checkEmail(this.formData.email)) {
+        this.errors.email = "El correo electronico ya está en uso.";
+        isValid = false;
       }
+
+      // Validación teléfono
+      const phoneRegex = /^\d{10}$/;
+      if (!this.formData.phone || !phoneRegex.test(this.formData.phone)) {
+        this.errors.phone = "El número de teléfono debe contener 10 dígitos numéricos.";
+        isValid = false;
+      }
+
+      // Validación NSS
+      const nssRegex = /^\d{11}$/;
+      if (!this.formData.nss || !nssRegex.test(this.formData.nss)) {
+        this.errors.nss = "El NSS debe contener 11 dígitos.";
+        isValid = false;
+      } else if (await this.checkNSS(this.formData.nss)) {
+        this.errors.nss = "El NSS ya está en uso.";
+        isValid = false;
+      }
+
 
       // Validar contraseña
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -184,30 +202,14 @@ export default {
         this.errors.allergies = "Las alergias deben contener solo letras.";
         isValid = false;
       }
-      // Validar número de teléfono (solo números, 10 dígitos)
-      const phoneRegex = /^\d{10}$/;
-      if (!this.formData.phone) {
-        this.errors.phone = "El número de teléfono es obligatorio.";
-        isValid = false;
-      } else if (!phoneRegex.test(this.formData.phone)) {
-        this.errors.phone = "El número de teléfono debe contener exactamente 10 dígitos numéricos.";
-        isValid = false;
-      }
-      // Validar número de seguro social (solo números, 11 dígitos)
-      const nssRegex = /^\d{11}$/;
-      if (!this.formData.nss) {
-        this.errors.nss = "El número de seguro social es obligatorio.";
-        isValid = false;
-      } else if (!nssRegex.test(this.formData.nss)) {
-        this.errors.nss = "El número de seguro social debe contener exactamente 11 dígitos numéricos.";
-        isValid = false;
-      }
+      console.log(this.errors);  // Verifica los errores generados
 
       return isValid;
     },
 
     async register() {
       const isValid = await this.validateForm();
+      console.log("Formulario es válido:", isValid);  // Agrega un console.log para verificar si el formulario es válido
       if (!isValid) return;
 
       this.isSubmitting = true;
@@ -228,14 +230,14 @@ export default {
 
     async checkAccountNumber(accountNumber) {
       try {
-        // Aquí corregimos la URL de la solicitud axios
+        // Aquí se obtiene directamente la respuesta sin asignar a 'response'
         const { data } = await axios.get(`http://localhost:5000/usuarios?accountNumber=${accountNumber}`);
-        
+
         if (data.length > 0) {
           // Si la cuenta ya está en uso, retornar true
           return true;
         }
-        
+
         return false; // Si no, retornar false
       } catch (error) {
         console.error("Error al verificar el número de cuenta:", error);
@@ -243,122 +245,156 @@ export default {
         return false; // En caso de error, también retornamos false
       }
     },
+    async checkEmail(email) {
+      try {
+        const { data } = await axios.get(`http://localhost:5000/usuarios?email=${email}`);
+        if (data.length > 0) {
+          // Si la cuenta ya está en uso, retornar true
+          return true;
+        }
+        return false; // Si no, retornar false
+
+      } catch (error) {
+        console.error("Error al verificar el correo electrónico:", error);
+        this.errorMessage = "Error al verificar el correo electrónico. Intenta más tarde.";
+        return false;
+      }
+    },
+
+    async checkNSS(nss) {
+      try {
+        const { data } = await axios.get(`http://localhost:5000/usuarios?nss=${nss}`);
+        if (data.length > 0) {
+          // Si la cuenta ya está en uso, retornar true
+          return true;
+        }
+        return false; // Si no, retornar false
+
+      } catch (error) {
+        console.error("Error al verificar el NSS:", error);
+        this.errorMessage = "Error al verificar el NSS. Intenta más tarde.";
+        return false;
+      }
+    },
   },
 };
 </script>
 
-  <style scoped>
-  .auth-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 20vh;
-    background-color: #f4f7fc;
-    width: 100%; /* Para que el contenedor ocupe el 100% del ancho */
-    max-width: 800px; /* Ajusta el tamaño máximo según lo que necesites */
-    margin: 0 auto; /* Centra el contenedor */
-  }
-  
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: #333;
-  }
-  
-  .auth-form {
-    display: flex;
-    flex-direction: column;
-    width: 100%; /* Para que ocupe todo el ancho disponible */
-    max-width: 600px; /* Ajusta el ancho máximo para el formulario */
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  label {
-    font-size: 1rem;
-    color: #555;
-  }
-  
-  input, select, textarea {
-    width: 100%; /* Hace que los inputs y selects ocupen el 100% del ancho */
-    padding: 10px;
-    margin-top: 5px;
-    border-radius: 4px;
-    border: 1px solid #cccccc;
-    font-size: 1rem;
-  }
-  
-  textarea {
-    resize: vertical; /* Permite que el área de texto se redimensione verticalmente */
-    min-height: 100px; /* Ajusta la altura mínima del área de texto */
-  }
-  
-  button.btn-create {
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  button.btn-create:hover {
-    background-color: #45a049;
-  }
-  
-  .login-link {
-    margin-top: 15px;
-    text-align: center;
-  }
-  
-  .login-link router-link {
-    color: #4CAF50;
-    font-weight: bold;
-    text-decoration: none;
-  }
-  
-  .login-link router-link:hover {
-    text-decoration: underline;
-  }
-  
-  .error-message {
-    color: red;
-    font-size: 0.9rem;
-    margin-top: 5px;
-  }
 
-  select {
-  width: 100%; /* Hace que el select ocupe el 100% del ancho */
+<style scoped>
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 20vh;
+  background-color: #f4f7fc;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  font-size: 1rem;
+  color: #555;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
   padding: 10px;
   margin-top: 5px;
   border-radius: 4px;
-  border: 1px solid #cccccc; /* Cambia el color del borde si es necesario */
+  border: 1px solid #cccccc;
   font-size: 1rem;
-  background-color: #d4edda; /* Verde claro */
-  color: #155724; /* Texto en color verde oscuro */
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+button.btn-create {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button.btn-create:hover {
+  background-color: #45a049;
+}
+
+.login-link {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.login-link router-link {
+  color: #4CAF50;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-link router-link:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 4px;
+  border: 1px solid #cccccc;
+  font-size: 1rem;
+  background-color: #d4edda;
+  color: #155724;
 }
 
 select:focus {
-  outline: none; /* Elimina el borde predeterminado al enfocar */
-  border: 1px solid #28a745; /* Color verde al enfocar */
+  outline: none;
+  border: 1px solid #28a745;
 }
 
 option {
-  background-color: #d4edda; /* Verde claro */
-  color: #155724; /* Texto en verde oscuro */
+  background-color: #d4edda;
+  color: #155724;
 }
 
 select option:hover {
-  background-color: #c3e6cb; /* Cambio de color cuando se pasa el mouse sobre las opciones */
+  background-color: #c3e6cb;
 }
 
 .spinner {
@@ -372,11 +408,12 @@ select option:hover {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
-
-
-  </style>
-  
-  
+</style>

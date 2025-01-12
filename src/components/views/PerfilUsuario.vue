@@ -5,22 +5,12 @@
       <div class="user-info">
         <!-- Imagen de Perfil (hacemos clic en la imagen para abrir el selector de archivo) -->
         <div class="profile-image-container">
-          <img 
-            :src="user.profileImage || defaultImage" 
-            alt="Imagen de Perfil" 
-            class="profile-image" 
-            @click="triggerFileInput" 
-          />
+          <img :src="user.profileImage || defaultImage" alt="Imagen de Perfil" class="profile-image"
+            @click="triggerFileInput" />
 
           <!-- Input oculto para cargar la imagen -->
-          <input 
-            type="file" 
-            ref="fileInput" 
-            class="image-upload" 
-            @change="handleImageUpload" 
-            accept="image/*" 
-            style="display: none;"
-          />
+          <input type="file" ref="fileInput" class="image-upload" @change="handleImageUpload" accept="image/*"
+            style="display: none;" />
         </div>
 
         <!-- Campos de texto que se pueden editar -->
@@ -54,7 +44,7 @@
           <span v-else>{{ user.bloodType }}</span>
 
           <label>Email:</label>
-          <input v-if="isEditing" v-model="user.email" type="email" class="email-field"  />
+          <input v-if="isEditing" v-model="user.email" type="email" class="email-field" />
           <span v-else>{{ user.email }}</span>
           <div v-if="errors.email" class="error">{{ errors.email }}</div>
 
@@ -103,6 +93,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
+import axios from 'axios';
 
 export default {
   name: "PerfilUsuario",
@@ -127,16 +118,17 @@ export default {
   created() {
     if (!this.user && localStorage.getItem('user')) {
       const storedUser = JSON.parse(localStorage.getItem('user'));
-      this.$store.commit('setUser', storedUser);
+      console.log('Tipo de usuario al iniciar sesión:', storedUser.userType); // Verifica que esté aquí
+      this.$store.commit('setUser', { user: storedUser, userType: storedUser.userType });
     }
-    this.originalUser = { ...this.user };
+    this.originalUser = { ...this.user, userType: this.userType };
   },
   methods: {
     ...mapActions(['updateUser', 'logout']),
     editProfile() {
       this.isEditing = true;
     },
-    saveProfile() {
+    async saveProfile() {
       let isValid = true;
       this.errors = {}; // Limpiar los errores previos
 
@@ -146,8 +138,8 @@ export default {
         this.errors.username = "El nombre de usuario solo debe contener letras.";
         isValid = false;
       }
-       // Validar alergias (opcional, pero solo letras si se ingresa)
-       if (this.user.allergies && !lettersRegex.test(this.user.allergies)) {
+      // Validar alergias (opcional, pero solo letras si se ingresa)
+      if (this.user.allergies && !lettersRegex.test(this.user.allergies)) {
         this.errors.allergies = "Las alergias deben contener solo letras.";
         isValid = false;
       }
@@ -167,6 +159,13 @@ export default {
       if (!this.user.email || !emailRegex.test(this.user.email)) {
         this.errors.email = "El correo electrónico debe ser válido.";
         isValid = false;
+      } else if (this.user.email !== this.originalUser.email) {
+        // Validar si el nuevo email ya está en uso
+        const emailExists = await this.checkEmail(this.user.email);
+        if (emailExists) {
+          this.errors.email = "El correo electrónico ya está en uso.";
+          isValid = false;
+        }
       }
 
       // Validación teléfono
@@ -181,20 +180,49 @@ export default {
       if (!this.user.nss || !nssRegex.test(this.user.nss)) {
         this.errors.nss = "El NSS debe contener 11 dígitos.";
         isValid = false;
+      } else if (this.user.nss !== this.originalUser.nss) {
+        // Validar si el nuevo NSS ya está en uso
+        const nssExists = await this.checkNSS(this.user.nss);
+        if (nssExists) {
+          this.errors.nss = "El NSS ya está en uso.";
+          isValid = false;
+        }
       }
 
+      // Si los datos son válidos, actualizar
       if (isValid) {
         this.updateUser(this.user);
         this.$store.commit('setUser', { ...this.user });
+
+        // Actualizar en localStorage
+        localStorage.setItem('user', JSON.stringify({ ...this.user, userType: this.getuserType }));
+
+        // Asegúrate de pasar el userType al commit
+        const userType = this.userType || 'Usuario';  // Asegúrate de que userType esté definido, usa un valor por defecto si es necesario
+
+        this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType aquí
         this.isEditing = false;
-        localStorage.setItem('user', JSON.stringify(this.user));
+      } else {
+        // Si los datos no son válidos, loguea un mensaje de error o mantén en modo edición
+        console.error("El formulario contiene errores. No se guardaron los cambios.");
       }
     },
+
     cancelEdit() {
-      this.$store.commit('setUser', { ...this.originalUser });
-      this.isEditing = false;
-      localStorage.setItem('user', JSON.stringify(this.originalUser));
+      if (this.originalUser && Object.keys(this.originalUser).length > 0) {
+        console.log('Guardando usuario en localStorage:', this.originalUser);
+        localStorage.setItem('user', JSON.stringify({ ...this.user, userType: this.userType }));
+
+        // Asegúrate de pasar el userType al commit
+        const userType = this.userType || 'Usuario';  // Asegúrate de que userType esté definido, usa un valor por defecto si es necesario
+
+        this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType aquí
+        this.isEditing = false;
+      } else {
+        console.error("El usuario original está vacío o no está definido.");
+      }
     },
+
     logout() {
       this.$store.dispatch('logout');
       localStorage.removeItem('user');
@@ -212,7 +240,13 @@ export default {
         if (validImageTypes.includes(file.type)) {
           const reader = new FileReader();
           reader.onload = (e) => {
-            this.$store.commit('setUser', { ...this.user, profileImage: e.target.result });
+            // Asegúrate de incluir el userType al actualizar el usuario
+            this.$store.commit('setUser', {
+              user: { ...this.user, profileImage: e.target.result },
+              userType: this.userType
+            });
+
+            // Limpia cualquier error de imagen previo
             this.imageError = null;
           };
           reader.readAsDataURL(file);
@@ -220,8 +254,29 @@ export default {
           this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
         }
       }
-    }
-  }
+    },
+
+    async checkEmail(email) {
+      try {
+        const { data } = await axios.get(`http://localhost:5000/usuarios?email=${email}`);
+        return data.length > 0; // Si ya existe, retorna true
+      } catch (error) {
+        console.error("Error al verificar el correo electrónico:", error);
+        this.errors.email = 'Hubo un error al verificar el correo electrónico.';
+        return false; // Permitir continuar con el flujo si ocurre un error
+      }
+    },
+
+    async checkNSS(nss) {
+      try {
+        const { data } = await axios.get(`http://localhost:5000/usuarios?nss=${nss}`);
+        return data.length > 0; // Devuelve true si ya existe
+      } catch (error) {
+        console.error("Error al verificar el NSS:", error);
+        return false; // Si hay un error, permite continuar con la validación
+      }
+    },
+  },
 };
 </script>
 
@@ -282,32 +337,30 @@ h2 {
 .editable-fields label,
 .editable-fields select,
 .editable-fields input {
-  display: block;  /* Forzar los elementos a estar en bloques (en línea no estarán uno encima del otro) */
+  display: block;
 }
 
-/* Reducir el margen entre la etiqueta y el campo de texto */
 .editable-fields label {
-  margin-bottom: 2px; /* Menos margen entre la etiqueta y el campo */
+  margin-bottom: 2px;
 }
 
-/* Aumentar el margen entre los campos para que se separen más */
 .editable-fields input,
 .editable-fields select {
-  margin-bottom: 12px; /* Más espacio después de cada campo de texto */
-  padding: 8px; /* Espacio dentro de la caja de texto */
-  box-sizing: border-box; /* Asegura que padding se incluya en el ancho */
+  margin-bottom: 12px;
+  padding: 8px;
+  box-sizing: border-box;
   width: 100%;
 }
 
 .editable-fields input {
   width: 100%;
   border: 1px solid #ccc;
- 
+
 }
 
 .editable-fields span {
   display: block;
-  margin-bottom: 12px; 
+  margin-bottom: 12px;
   padding: 8px;
   background-color: #f4f4f4;
   border-radius: 4px;
@@ -334,7 +387,7 @@ button:hover {
 
 .save-btn {
   margin-top: 20px;
-  background-color: #4caf50; /* Verde para el botón de guardar */
+  background-color: #4caf50;
 }
 
 .save-btn:hover {
@@ -343,7 +396,7 @@ button:hover {
 
 .cancel-btn {
   margin-top: 20px;
-  background-color: #f44336; /* Rojo para el botón de cancelar */
+  background-color: #f44336;
 }
 
 .cancel-btn:hover {
