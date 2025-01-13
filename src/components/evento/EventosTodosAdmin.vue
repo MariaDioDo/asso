@@ -51,14 +51,27 @@
           <label for="description">Descripción</label>
           <textarea v-model="formulario.description" id="description" required></textarea>
 
-          <label for="image">URL de la imagen</label>
-          <input v-model="formulario.image" type="text" id="image" required />
 
           <!-- Condicional para Torneo: Número de integrantes por equipo -->
           <div v-if="formulario.event_type === 'Torneo'">
             <label for="team_size">Número de integrantes por equipo</label>
             <input v-model="formulario.team_size" type="number" id="team_size" min="1" required />
           </div>
+
+          <div class="form-group file-upload">
+            <div class="image-space" @click="triggerFileInput" :style="formulario.image ? 'cursor: pointer;' : ''">
+              <div v-if="formulario.image" class="image-preview">
+                <img :src="formulario.image" alt="Imagen del Evento" />
+              </div>
+              <div v-else>
+                <p>Haz clic para agregar una imagen</p>
+              </div>
+              <input ref="ImageInput" id="image" type="file" accept="image/*" @change="handleImageUpload"
+                style="display: none" />
+            </div>
+            <p v-if="imageError" class="error-message">{{ imageError }}</p>
+          </div>
+
 
           <button type="submit">Guardar</button>
           <button type="button" @click="cerrarFormulario">Cancelar</button>
@@ -90,6 +103,47 @@ export default {
     };
   },
   methods: {
+    validarFechas() {
+      const fechaHoy = new Date();
+      const fechaInicio = new Date(this.formulario.start_date);
+      const fechaFin = new Date(this.formulario.end_date);
+
+      // Validar que la fecha de inicio no sea anterior a hoy
+      if (fechaInicio < fechaHoy) {
+        alert("La fecha de inicio no puede ser anterior a la fecha actual.");
+        return false;
+      }
+
+      // Validar que la fecha de finalización no sea anterior a la fecha de inicio
+      if (fechaFin < fechaInicio) {
+        alert("La fecha de finalización no puede ser anterior a la fecha de inicio.");
+        return false;
+      }
+
+      return true;
+    },
+
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+        if (validImageTypes.includes(file.type)) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.formulario.image = e.target.result;
+            // this.formData.logo = file;
+            this.imageError = null; // Limpiar cualquier error previo
+          };
+          reader.readAsDataURL(file);
+        } else {
+          this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
+          event.target.value = ''; // Limpiar archivo seleccionado
+        }
+      }
+    },
+    triggerFileInput() {
+      this.$refs.ImageInput.click();
+    },
     async fetchEventos() {
       try {
         this.loading = true;
@@ -120,8 +174,8 @@ export default {
           name: "",
           description: "",
           image: "",
-         // type: "",
-          team_size: null,  // Asegúrate de incluir el campo team_size
+          // type: "",
+          team_size: null,
         };
       }
     },
@@ -129,6 +183,9 @@ export default {
       this.mostrarFormulario = false;
     },
     async crearEvento() {
+      if (!this.validarFechas()) {
+        return;
+      }
       try {
         const nuevoEvento = { ...this.formulario, id: Date.now().toString() };
         const response = await fetch("http://localhost:5000/events", {
@@ -145,6 +202,9 @@ export default {
       }
     },
     async actualizarEvento() {
+      if (!this.validarFechas()) {
+        return;
+      }
       try {
         // Eliminar el campo team_size si el evento no es un Torneo
         if (this.formulario.event_type !== 'Torneo') {
@@ -229,9 +289,8 @@ export default {
 }
 
 .eventos-lista {
-  max-height: 100%;
-  overflow-y: auto;
-  padding-right: 15px;
+  max-height: 600px;
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
@@ -247,6 +306,7 @@ export default {
 .eventos-lista::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
 
 .evento-item {
   display: flex;
@@ -264,7 +324,7 @@ export default {
 }
 
 .evento-item:hover {
-  transform: scale(1.01);
+  transform: scale(1.0);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -393,6 +453,7 @@ textarea {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin: 40px;
 }
 
 .modal-content button:hover {
@@ -405,5 +466,32 @@ textarea {
 
 .modal-content button[type="button"]:hover {
   background-color: #e53935;
+}
+
+.modal-content .image-space img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.image-space {
+  width: 250px;
+  height: 200px;
+  border: 2px solid var(--dark-green);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  margin: 0 auto;
+  margin-bottom: 20px;
+}
+
+.image-space p {
+  text-align: center;
 }
 </style>
