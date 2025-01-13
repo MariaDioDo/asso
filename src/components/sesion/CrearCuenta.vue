@@ -209,7 +209,7 @@ export default {
 
     async register() {
       const isValid = await this.validateForm();
-      console.log("Formulario es válido:", isValid);  // Agrega un console.log para verificar si el formulario es válido
+      console.log("Formulario es válido:", isValid);  
       if (!isValid) return;
 
       this.isSubmitting = true;
@@ -218,7 +218,7 @@ export default {
       try {
         const response = await axios.post("http://localhost:5000/usuarios", this.formData);
         alert("Cuenta creada exitosamente.");
-        console.log("Datos de la respuesta:", response.data); // Puedes usar la respuesta aquí
+        console.log("Datos de la respuesta:", response.data); 
         this.$router.push("/login");
       } catch (error) {
         console.error("Error al crear cuenta:", error);

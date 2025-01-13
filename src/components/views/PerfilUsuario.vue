@@ -197,8 +197,7 @@ export default {
         // Actualizar en localStorage
         localStorage.setItem('user', JSON.stringify({ ...this.user, userType: this.getuserType }));
 
-        // Asegúrate de pasar el userType al commit
-        const userType = this.userType || 'Usuario';  // Asegúrate de que userType esté definido, usa un valor por defecto si es necesario
+        const userType = this.userType || 'Usuario';  
 
         this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType aquí
         this.isEditing = false;
@@ -213,10 +212,9 @@ export default {
         console.log('Guardando usuario en localStorage:', this.originalUser);
         localStorage.setItem('user', JSON.stringify({ ...this.user, userType: this.userType }));
 
-        // Asegúrate de pasar el userType al commit
-        const userType = this.userType || 'Usuario';  // Asegúrate de que userType esté definido, usa un valor por defecto si es necesario
+        const userType = this.userType || 'Usuario';  
 
-        this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType aquí
+        this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType 
         this.isEditing = false;
       } else {
         console.error("El usuario original está vacío o no está definido.");
@@ -240,13 +238,11 @@ export default {
         if (validImageTypes.includes(file.type)) {
           const reader = new FileReader();
           reader.onload = (e) => {
-            // Asegúrate de incluir el userType al actualizar el usuario
             this.$store.commit('setUser', {
               user: { ...this.user, profileImage: e.target.result },
               userType: this.userType
             });
 
-            // Limpia cualquier error de imagen previo
             this.imageError = null;
           };
           reader.readAsDataURL(file);
