@@ -3,15 +3,15 @@
     <div class="eventos-lista">
       <div 
         v-for="evento in eventos" 
-        :key="evento.id" 
+        :key="evento.idEvento" 
         class="evento-item"
-        @click="openDetail(evento.id)"
+        @click="openDetail(evento.idEvento)"
       >
         <img :src="evento.image" alt="Imagen del evento" class="evento-imagen" />
         <div class="evento-detalle">
-          <h3 class="evento-titulo">{{ evento.name }}</h3>
-          <p class="evento-fecha" v-if="evento.fecha">{{ evento.fecha }}</p>
-          <p class="evento-descripcion">{{ evento.description }}</p>
+          <h3 class="evento-titulo">{{ evento.titulo }}</h3>
+          <p class="evento-fecha" v-if="evento.fechaInicial">{{ evento.fechaInicial }} - {{ evento.fechaFinal }}</p>
+          <p class="evento-descripcion">{{ evento.descripcion }}</p>
         </div>
       </div>
     </div>
@@ -35,7 +35,7 @@ export default {
     },
     async fetchEventos() {
       try {
-        const response = await fetch("http://localhost:5000/events");
+        const response = await fetch("https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/eventos");
         const data = await response.json();
         console.log("Datos obtenidos:", data); // Revisa el formato
         this.eventos = data; // Ajusta esto si los datos son un array directo
@@ -49,6 +49,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 .eventos-container {

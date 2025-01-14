@@ -233,6 +233,10 @@ export default {
 
   methods: {
 
+    goBack() {
+      this.$router.push(`/eventos/${this.event.id}`);
+    },
+
     async submitForm() {
       if (!this.event.team_size) {
         alert('El tamaño del equipo no está definido. Por favor, inténtalo más tarde.');
@@ -285,10 +289,9 @@ export default {
 
     // TODO: ELIMINAR MIEMBRO
     deleteMember(index) {
-      const member = this.formData.integrantes[index];
-      console.log("Eliminando miembro:", member);
+      const removedMember = this.formData.integrantes.splice(index, 1);
+      console.log("Miembro eliminado:", removedMember[0]);
     },
-
     isCurrentUser(member) {
       return member.accountNumber === this.getUser?.accountNumber;
     },
@@ -319,12 +322,11 @@ export default {
           const reader = new FileReader();
           reader.onload = (e) => {
             this.formData.logoUrl = e.target.result;
-            this.imageError = null; 
+            this.imageError = null;
           };
           reader.readAsDataURL(file);
         } else {
           this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
-          event.target.value = ''; 
         }
       }
     },
@@ -336,7 +338,7 @@ export default {
 
     closeModal() {
       this.showModal = false;
-      this.errors = {};  
+      this.errors = {};
     },
 
     addMember() {
@@ -346,7 +348,7 @@ export default {
         if (indexToEdit !== -1) {
           this.formData.integrantes[indexToEdit] = { ...this.newMember };
           console.log("Miembro editado:", this.formData.integrantes[indexToEdit]);
-          this.closeModal();  
+          this.closeModal();
         }
       } else {
         // Si no estamos editando, validamos y agregamos un nuevo integrante
@@ -397,7 +399,12 @@ export default {
       if (!this.newMember.email || !emailRegex.test(this.newMember.email)) {
         this.errors.email = "El correo electrónico debe ser válido.";
         isValid = false;
-      }
+      } this.formData.integrantes.forEach((integrante) => {
+        if (integrante.email === this.newMember.email) {
+          this.errors.email = "El correo ya existe";
+          isValid = false;
+        }
+      })
 
       // Validación teléfono
       const phoneRegex = /^\d{10}$/;
@@ -412,6 +419,12 @@ export default {
         this.errors.nss = "El NSS debe contener 11 dígitos.";
         isValid = false;
       }
+      this.formData.integrantes.forEach((integrante) => {
+        if (integrante.nss === this.newMember.nss) {
+          this.errors.nss = "El nss está repetido";
+          isValid = false;
+        }
+      })
 
       // Validar número de cuenta (7 dígitos numéricos)
       const accountNumberRegex = /^\d{7}$/;
@@ -421,16 +434,13 @@ export default {
       } else if (!accountNumberRegex.test(this.newMember.accountNumber)) {
         this.errors.accountNumber = "El número de cuenta debe tener exactamente 7 dígitos.";
         isValid = false;
-      } 
-
+      }
       this.formData.integrantes.forEach((integrante) => {
-          if (integrante.accountNumber === this.newMember.accountNumber){
-            this.errors.accountNumber = "El numero de cuenta no puede estar repetido";
-            isValid = false;
-          }
+        if (integrante.accountNumber === this.newMember.accountNumber) {
+          this.errors.accountNumber = "El numero de cuenta no puede estar repetido";
+          isValid = false;
+        }
       })
-
-
       return isValid;
     },
 
@@ -517,7 +527,7 @@ table th {
 }
 
 .action-button {
-  display:flex;
+  display: flex;
   /* Asegúrate de que no esté en "display: none;" */
 }
 

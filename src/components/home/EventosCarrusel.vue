@@ -7,12 +7,12 @@
         :key="index"
         v-show="isVisible(index)"
       >
-        <!-- Asegúrate de que la URL sea correcta y esté enlazada correctamente -->
-        <img v-bind:src="event.image" alt="Event Image" class="carousel-image" />
+        <!-- Aquí puedes agregar una imagen si tu API la tuviera o usar una imagen predeterminada -->
+        <img v-bind:src="event.image || 'default-image.jpg'" alt="Event Image" class="carousel-image" />
         <div class="event-info">
-          <h3>{{ event.name }}</h3>
-          <p>{{ event.description }}</p>
-          <button @click="openDetail(event.id)" class="detalle-link">
+          <h3>{{ event.titulo }}</h3> <!-- Mostrar el título del evento -->
+          <p>{{ event.descripcion }}</p> <!-- Mostrar la descripción del evento -->
+          <button @click="openDetail(event.idEvento)" class="detalle-link">
             Ver Detalle
           </button>
         </div>
@@ -41,7 +41,7 @@ export default {
   methods: {
     async fetchEvents() {
       try {
-        const response = await fetch("http://localhost:5000/events");
+        const response = await fetch("https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/eventos");
         if (response.ok) {
           this.events = await response.json();
         } else {
@@ -76,6 +76,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .carousel-container {

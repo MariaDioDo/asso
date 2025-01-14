@@ -1,21 +1,22 @@
 <template>
   <div v-if="event" class="event-container">
     <div class="event-card">
-      <h1 class="event-title">{{ event.name }}</h1>
+      <h1 class="event-title">{{ event.titulo }}</h1>
 
       <div class="event-image">
+        <!-- Aquí puedes agregar una imagen si corresponde, o dejarlo vacío -->
         <img :src="event.image" alt="Imagen del evento" />
       </div>
 
       <div class="event-description">
-        <p>{{ event.description }}</p>
+        <p>{{ event.descripcion }}</p>
       </div>
 
       <!-- Botones -->
       <div class="button-container">
         <button class="back-button" @click="goBack">Ir a eventos</button>
 
-        <!-- Mostrar botón "Inscribirse" solo si team_size tiene un número válido -->
+        <!-- Mostrar botón "Inscribirse" solo si hay un tamaño de equipo válido (en caso de que lo necesites) -->
         <button
           class="signup-button"
           v-if="isTeamSizeValid"
@@ -54,9 +55,9 @@ export default {
   },
 
   computed: {
-    // Computada para validar si team_size es un número
+    // Computada para validar si team_size es un número (si tu JSON lo tuviera, de lo contrario puedes quitarla)
     isTeamSizeValid() {
-      return typeof this.event?.team_size === "number";
+      return typeof this.event?.team_size === "number"; // Asegúrate que el campo 'team_size' exista o elimínalo
     },
   },
 
@@ -68,7 +69,7 @@ export default {
   methods: {
     async fetchEvent(id) {
       try {
-        const response = await fetch(`http://localhost:5000/events/${id}`); // URL de la API
+        const response = await fetch(`https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/evento/${id}`);
         const data = await response.json();
 
         if (data) {
@@ -94,7 +95,7 @@ export default {
       if (isAuthenticated) {
         this.$router.push({
           name: "InscripcionEquipo",
-          params: { id: this.event.id },
+          params: { id: this.event.idEvento }, // Utiliza idEvento del JSON
         });
       } else {
         this.$router.push("/login");
