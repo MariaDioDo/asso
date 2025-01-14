@@ -167,7 +167,6 @@ import { mapGetters } from 'vuex';
 export default {
   data() {
     return {
-      //dif
       event: {},
       formData: {
         nombreEquipo: '',
@@ -277,21 +276,15 @@ export default {
 
         const memberToEdit = this.formData.integrantes[index];
         console.log('Miembro a editar:', memberToEdit);
-
-        // Rellenar el formulario con los datos del miembro
         this.newMember = { ...memberToEdit };
-
-        // Abrir el modal
         this.openModal();
       } else {
         console.error("Índice de miembro no válido:", index);
-        // Aquí podrías agregar un mensaje de error visual si lo deseas
       }
     },
 
     deleteMember(index) {
       const member = this.formData.integrantes[index];
-      // Aquí puedes definir la lógica para eliminar un integrante
       console.log("Eliminando miembro:", member);
     },
 
@@ -325,12 +318,12 @@ export default {
           const reader = new FileReader();
           reader.onload = (e) => {
             this.formData.logoUrl = e.target.result;
-            this.imageError = null; // Limpiar cualquier error previo
+            this.imageError = null; 
           };
           reader.readAsDataURL(file);
         } else {
           this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
-          event.target.value = ''; // Limpiar archivo seleccionado
+          event.target.value = ''; 
         }
       }
     },
@@ -342,7 +335,7 @@ export default {
 
     closeModal() {
       this.showModal = false;
-      this.errors = {};  // Reset errors on close
+      this.errors = {};  
     },
 
     addMember() {
@@ -352,7 +345,7 @@ export default {
         if (indexToEdit !== -1) {
           this.formData.integrantes[indexToEdit] = { ...this.newMember };
           console.log("Miembro editado:", this.formData.integrantes[indexToEdit]);
-          this.closeModal();  // Cerrar el modal después de editar
+          this.closeModal();  
         }
       } else {
         // Si no estamos editando, validamos y agregamos un nuevo integrante
