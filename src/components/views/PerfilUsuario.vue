@@ -16,22 +16,22 @@
         <!-- Campos de texto que se pueden editar -->
         <div class="editable-fields">
           <label>Nombre:</label>
-          <input v-if="isEditing" v-model="user.username" type="text" />
-          <span v-else>{{ user.username }}</span>
-          <div v-if="errors.username" class="error">{{ errors.username }}</div>
+          <input v-if="isEditing" v-model="user.nombre" type="text" />
+          <span v-else>{{ user.nombre }}</span>
+          <div v-if="errors.nombre" class="error">{{ errors.nombre }}</div>
 
           <label>Apellido Paterno:</label>
-          <input v-if="isEditing" v-model="user.lastName" type="text" />
-          <span v-else>{{ user.lastName }}</span>
-          <div v-if="errors.lastName" class="error">{{ errors.lastName }}</div>
+          <input v-if="isEditing" v-model="user.apellidoPaterno" type="text" />
+          <span v-else>{{ user.apellidoPaterno }}</span>
+          <div v-if="errors.apellidoPaterno" class="error">{{ errors.apellidoPaterno }}</div>
 
           <label>Apellido Materno:</label>
-          <input v-if="isEditing" v-model="user.secondLastName" type="text" />
-          <span v-else>{{ user.secondLastName }}</span>
-          <div v-if="errors.secondLastName" class="error">{{ errors.secondLastName }}</div>
+          <input v-if="isEditing" v-model="user.apellidoMaterno" type="text" />
+          <span v-else>{{ user.apellidoMaterno }}</span>
+          <div v-if="errors.apellidoMaterno" class="error">{{ errors.apellidoMaterno }}</div>
 
           <label>Tipo de Sangre:</label>
-          <select v-if="isEditing" v-model="user.bloodType" class="blood-type">
+          <select v-if="isEditing" v-model="user.tipoSangre" class="blood-type">
             <option value="A+">A+</option>
             <option value="A-">A-</option>
             <option value="B+">B+</option>
@@ -41,35 +41,35 @@
             <option value="AB+">AB+</option>
             <option value="AB-">AB-</option>
           </select>
-          <span v-else>{{ user.bloodType }}</span>
+          <span v-else>{{ user.tipoSangre }}</span>
 
           <label>Email:</label>
-          <input v-if="isEditing" v-model="user.email" type="email" class="email-field" />
-          <span v-else>{{ user.email }}</span>
-          <div v-if="errors.email" class="error">{{ errors.email }}</div>
+          <input v-if="isEditing" v-model="user.correo" type="email" class="email-field" />
+          <span v-else>{{ user.correo }}</span>
+          <div v-if="errors.correo" class="error">{{ errors.correo }}</div>
 
           <label>Alergias:</label>
-          <input v-if="isEditing" v-model="user.allergies" type="text" />
-          <span v-else>{{ user.allergies }}</span>
-          <div v-if="errors.allergies" class="error">{{ errors.allergies }}</div>
+          <input v-if="isEditing" v-model="user.alergias" type="text" />
+          <span v-else>{{ user.alergias }}</span>
+          <div v-if="errors.alergias" class="error">{{ errors.alergias }}</div>
 
           <label>Teléfono:</label>
-          <input v-if="isEditing" v-model="user.phone" type="text" />
-          <span v-else>{{ user.phone }}</span>
-          <div v-if="errors.phone" class="error">{{ errors.phone }}</div>
+          <input v-if="isEditing" v-model="user.celular" type="text" />
+          <span v-else>{{ user.celular }}</span>
+          <div v-if="errors.celular" class="error">{{ errors.celular }}</div>
 
           <label>NSS:</label>
-          <input v-if="isEditing" v-model="user.nss" type="text" />
-          <span v-else>{{ user.nss }}</span>
-          <div v-if="errors.nss" class="error">{{ errors.nss }}</div>
+          <input v-if="isEditing" v-model="user.numeroSeguro" type="text" />
+          <span v-else>{{ user.numeroSeguro }}</span>
+          <div v-if="errors.numeroSeguro" class="error">{{ errors.numeroSeguro }}</div>
 
           <!-- Datos no editables (como el ID de usuario) -->
           <label>Carrera:</label>
-          <span>{{ user.degree }}</span>
+          <span>{{ user.licenciatura }}</span>
           <label>Número de Cuenta:</label>
-          <span>{{ user.accountNumber }}</span>
+          <span>{{ user.numeroCuenta }}</span>
           <label>Tipo de usuario:</label>
-          <span>{{ user.personType }}</span>
+          <span>{{ user.tipoPersona }}</span>
         </div>
       </div>
 
@@ -118,10 +118,10 @@ export default {
   created() {
     if (!this.user && localStorage.getItem('user')) {
       const storedUser = JSON.parse(localStorage.getItem('user'));
-      console.log('Tipo de usuario al iniciar sesión:', storedUser.userType); // Verifica que esté aquí
-      this.$store.commit('setUser', { user: storedUser, userType: storedUser.userType });
+      console.log('Tipo de usuario al iniciar sesión:', storedUser.tipoPersona); // Verifica que esté aquí
+      this.$store.commit('setUser', { user: storedUser, tipoPersona: storedUser.tipoPersona });
     }
-    this.originalUser = { ...this.user, userType: this.userType };
+    this.originalUser = { ...this.user, tipoPersona: this.user.tipoPersona };
   },
   methods: {
     ...mapActions(['updateUser', 'logout']),
@@ -132,59 +132,59 @@ export default {
       let isValid = true;
       this.errors = {}; // Limpiar los errores previos
 
-      // Validación nombre de usuario
+      // Validación nombre
       const lettersRegex = /^[A-Za-z\s]+$/;
-      if (!this.user.username || !lettersRegex.test(this.user.username)) {
-        this.errors.username = "El nombre de usuario solo debe contener letras.";
+      if (!this.user.nombre || !lettersRegex.test(this.user.nombre)) {
+        this.errors.nombre = "El nombre solo debe contener letras.";
         isValid = false;
       }
       // Validar alergias (opcional, pero solo letras si se ingresa)
-      if (this.user.allergies && !lettersRegex.test(this.user.allergies)) {
-        this.errors.allergies = "Las alergias deben contener solo letras.";
+      if (this.user.alergias && !lettersRegex.test(this.user.alergias)) {
+        this.errors.alergias = "Las alergias deben contener solo letras.";
         isValid = false;
       }
 
       // Validación apellidos
-      if (!this.user.lastName || !lettersRegex.test(this.user.lastName)) {
-        this.errors.lastName = "El apellido paterno solo debe contener letras.";
+      if (!this.user.apellidoPaterno || !lettersRegex.test(this.user.apellidoPaterno)) {
+        this.errors.apellidoPaterno = "El apellido paterno solo debe contener letras.";
         isValid = false;
       }
-      if (!this.user.secondLastName || !lettersRegex.test(this.user.secondLastName)) {
-        this.errors.secondLastName = "El apellido materno solo debe contener letras.";
+      if (!this.user.apellidoMaterno || !lettersRegex.test(this.user.apellidoMaterno)) {
+        this.errors.apellidoMaterno = "El apellido materno solo debe contener letras.";
         isValid = false;
       }
 
       // Validación email
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-      if (!this.user.email || !emailRegex.test(this.user.email)) {
-        this.errors.email = "El correo electrónico debe ser válido.";
+      if (!this.user.correo || !emailRegex.test(this.user.correo)) {
+        this.errors.correo = "El correo electrónico debe ser válido.";
         isValid = false;
-      } else if (this.user.email !== this.originalUser.email) {
+      } else if (this.user.correo !== this.originalUser.correo) {
         // Validar si el nuevo email ya está en uso
-        const emailExists = await this.checkEmail(this.user.email);
+        const emailExists = await this.checkEmail(this.user.correo);
         if (emailExists) {
-          this.errors.email = "El correo electrónico ya está en uso.";
+          this.errors.correo = "El correo electrónico ya está en uso.";
           isValid = false;
         }
       }
 
       // Validación teléfono
       const phoneRegex = /^\d{10}$/;
-      if (!this.user.phone || !phoneRegex.test(this.user.phone)) {
-        this.errors.phone = "El número de teléfono debe contener 10 dígitos numéricos.";
+      if (!this.user.celular || !phoneRegex.test(this.user.celular)) {
+        this.errors.celular = "El número de teléfono debe contener 10 dígitos numéricos.";
         isValid = false;
       }
 
       // Validación NSS
       const nssRegex = /^\d{11}$/;
-      if (!this.user.nss || !nssRegex.test(this.user.nss)) {
-        this.errors.nss = "El NSS debe contener 11 dígitos.";
+      if (!this.user.numeroSeguro || !nssRegex.test(this.user.numeroSeguro)) {
+        this.errors.numeroSeguro = "El NSS debe contener 11 dígitos.";
         isValid = false;
-      } else if (this.user.nss !== this.originalUser.nss) {
+      } else if (this.user.numeroSeguro !== this.originalUser.numeroSeguro) {
         // Validar si el nuevo NSS ya está en uso
-        const nssExists = await this.checkNSS(this.user.nss);
+        const nssExists = await this.checkNSS(this.user.numeroSeguro);
         if (nssExists) {
-          this.errors.nss = "El NSS ya está en uso.";
+          this.errors.numeroSeguro = "El NSS ya está en uso.";
           isValid = false;
         }
       }
@@ -195,84 +195,58 @@ export default {
         this.$store.commit('setUser', { ...this.user });
 
         // Actualizar en localStorage
-        localStorage.setItem('user', JSON.stringify({ ...this.user, userType: this.getuserType }));
+        localStorage.setItem('user', JSON.stringify({ ...this.user, tipoPersona: this.getTipoPersona }));
 
-        const userType = this.userType || 'Usuario';  
+        const tipoPersona = this.user.tipoPersona || 'Usuario';  
 
-        this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType aquí
+        this.$store.commit('setUser', { user: { ...this.originalUser }, tipoPersona }); // Poner un tipoPersona por defecto
         this.isEditing = false;
-      } else {
-        // Si los datos no son válidos, loguea un mensaje de error o mantén en modo edición
-        console.error("El formulario contiene errores. No se guardaron los cambios.");
       }
     },
-
     cancelEdit() {
-      if (this.originalUser && Object.keys(this.originalUser).length > 0) {
-        console.log('Guardando usuario en localStorage:', this.originalUser);
-        localStorage.setItem('user', JSON.stringify({ ...this.user, userType: this.userType }));
-
-        const userType = this.userType || 'Usuario';  
-
-        this.$store.commit('setUser', { user: { ...this.originalUser }, userType }); // Pasa userType 
-        this.isEditing = false;
-      } else {
-        console.error("El usuario original está vacío o no está definido.");
-      }
+      this.isEditing = false;
+      this.user = { ...this.originalUser };
     },
 
-    logout() {
-      this.$store.dispatch('logout');
-      localStorage.removeItem('user');
-      this.$router.push('/login');
-    },
     triggerFileInput() {
-      if (this.isEditing) {
-        this.$refs.fileInput.click();
-      }
+      this.$refs.fileInput.click();
     },
+
     handleImageUpload(event) {
       const file = event.target.files[0];
-      if (file) {
-        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
-        if (validImageTypes.includes(file.type)) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            this.$store.commit('setUser', {
-              user: { ...this.user, profileImage: e.target.result },
-              userType: this.userType
-            });
-
-            this.imageError = null;
-          };
-          reader.readAsDataURL(file);
-        } else {
-          this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
-        }
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.user.profileImage = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
     },
 
+    // Funciones de validación asíncronas
     async checkEmail(email) {
+      // Lógica para verificar si el correo electrónico ya está en uso
       try {
-        const { data } = await axios.get(`http://localhost:5000/usuarios?email=${email}`);
-        return data.length > 0; // Si ya existe, retorna true
+        const response = await axios.get(`https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/participantes
+?correo=${email}`);
+        return response.data.exists;
       } catch (error) {
-        console.error("Error al verificar el correo electrónico:", error);
-        this.errors.email = 'Hubo un error al verificar el correo electrónico.';
-        return false; // Permitir continuar con el flujo si ocurre un error
+        console.error("Error verificando el correo: ", error);
+        return false;
       }
     },
-
     async checkNSS(nss) {
+      // Lógica para verificar si el NSS ya está en uso
       try {
-        const { data } = await axios.get(`http://localhost:5000/usuarios?nss=${nss}`);
-        return data.length > 0; // Devuelve true si ya existe
+        const response = await axios.get(`https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/participantes
+?numeroSeguro=${nss}`);
+        return response.data.exists;
       } catch (error) {
-        console.error("Error al verificar el NSS:", error);
-        return false; // Si hay un error, permite continuar con la validación
+        console.error("Error verificando el NSS: ", error);
+        return false;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

@@ -14,7 +14,7 @@
         <label for="password">Contraseña:</label>
         <input type="password" id="password" v-model="password" required />
       </div>
-      <button @click="ir" type="submit" class="btn-login">Iniciar Sesión</button>
+      <button type="submit" class="btn-login">Iniciar Sesión</button> <!-- Aquí no es necesario el @click="ir" -->
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </form>
     <p class="signup-link">
@@ -25,47 +25,53 @@
 
 <script>
 import axios from 'axios';
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   data() {
     return {
-      email: "",
-      accountNumber: "",
-      password: "",
+      email: "", // Para buscar en 'correo' para administradores
+      accountNumber: "", // Para buscar en 'numeroCuenta'
+      password: "", // Para buscar en 'password' para administradores
       errorMessage: "",
     };
   },
-  computed: {
-    ...mapGetters(['isAuthenticated']), // Obtiene el estado de autenticación del store
-  },
   methods: {
-    ...mapActions(['login']), // Conectar la acción login de Vuex
+    ...mapActions(['login']),
     async handleLogin() {
       this.errorMessage = ""; // Reinicia el mensaje de error
       try {
-        // Llamada a la API para obtener usuarios y administradores
         const [usuariosResponse, administradoresResponse] = await Promise.all([
-          axios.get("http://localhost:5000/usuarios"),
-          axios.get("http://localhost:5000/administradores"),
+          axios.get("https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/participantes"),
+          axios.get("https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/administradores"),
         ]);
 
-        // Busca el usuario en los dos arrays
+        console.log('Usuarios:', usuariosResponse.data);
+        console.log('Administradores:', administradoresResponse.data);
+
+        // Busca el usuario solo si numeroCuenta no es null
         const usuario = usuariosResponse.data.find(
-          u => u.email === this.email && u.accountNumber === this.accountNumber
-        );
-        const administrador = administradoresResponse.data.find(
-          a => a.email === this.email && a.accountNumber === this.accountNumber
+          u => u.numeroCuenta && u.numeroCuenta == this.accountNumber // Valida si numeroCuenta no es null
         );
 
-        // Verifica que las credenciales coincidan
-        if (usuario && usuario.password === this.password) {
-          // Si es un usuario, almacena el tipo como 'Usuario'
+        // Busca el administrador si los campos no son null
+        const administrador = administradoresResponse.data.find(
+          a =>
+            a.correo === this.email &&
+            a.numeroCuenta && a.numeroCuenta == this.accountNumber && // Valida numeroCuenta no nulo
+            a.password === this.password
+        );
+
+        console.log('Usuario encontrado:', usuario);
+        console.log('Administrador encontrado:', administrador);
+
+        if (usuario) {
+          console.log('Usuario autenticado correctamente');
           this.$store.dispatch('login', { user: usuario, userType: 'Usuario' });
           localStorage.setItem('user', JSON.stringify(usuario));
           this.$router.push('/perfilUsuario');
-        } else if (administrador && administrador.password === this.password) {
-          // Si es un administrador, almacena el tipo como 'Administrador'
+        } else if (administrador) {
+          console.log('Administrador autenticado correctamente');
           this.$store.dispatch('login', { user: administrador, userType: 'Administrador' });
           localStorage.setItem('user', JSON.stringify(administrador));
           this.$router.push('/perfilAdministrador');
@@ -77,9 +83,6 @@ export default {
         this.errorMessage = "Error de conexión. Intenta nuevamente.";
       }
     },
-    ir() {
-      this.$router.push('/perfilUsuario'); // Redirige al login después de iniciar sesion
-    }
   },
 };
 </script>

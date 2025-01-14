@@ -59,8 +59,13 @@ export default {
             fechaFinal: this.event.fechaFinal,
             tipoEvento: this.event.tipoEvento,
             persona: {
+              idPersona: this.event.persona.idPersona,
               nombre: this.event.persona.nombre,
               tipo: this.event.persona.tipo,
+              numeroCuenta: this.event.persona.numeroCuenta,
+              celular: this.event.persona.celular,
+              correo: this.event.persona.correo,
+              licenciatura: this.event.persona.licenciatura
             },
             plantel: this.event.plantel,  // Aquí el id del plantel       
           }),

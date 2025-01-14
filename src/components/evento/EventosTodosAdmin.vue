@@ -11,15 +11,15 @@
       </div>
 
       <div class="eventos-lista">
-        <div v-for="evento in eventos" :key="evento.id" class="evento-item">
+        <div v-for="evento in eventos" :key="evento.idEvento" class="evento-item">
           <img :src="evento.image" alt="Imagen del evento" class="evento-imagen" />
           <div class="evento-detalle">
-            <h3 class="evento-titulo">{{ evento.name }}</h3>
-            <p class="evento-descripcion">{{ evento.description }}</p>
+            <h3 class="evento-titulo">{{ evento.titulo }}</h3>
+            <p class="evento-descripcion">{{ evento.descripcion }}</p>
           </div>
           <div class="botones-acciones">
-            <button @click="abrirFormulario('editar', evento.id)">Editar</button>
-            <button @click="eliminarEvento(evento.id)">Eliminar</button>
+            <button @click="abrirFormulario('editar', evento.idEvento)">Editar</button>
+            <button @click="eliminarEvento(evento.idEvento)">Eliminar</button>
           </div>
         </div>
       </div>
@@ -32,28 +32,27 @@
       <div class="modal-content">
         <h3>{{ modoFormulario === 'crear' ? 'Crear Evento' : 'Editar Evento' }}</h3>
         <form @submit.prevent="modoFormulario === 'crear' ? crearEvento() : actualizarEvento()">
-          <label for="name">Título del evento</label>
-          <input v-model="formulario.name" type="text" id="name" required />
+          <label for="titulo">Título del evento</label>
+          <input v-model="formulario.titulo" type="text" id="titulo" required />
 
-          <label for="start_date">Fecha de inicio</label>
-          <input v-model="formulario.start_date" type="date" id="start_date" required />
+          <label for="fechaInicial">Fecha de inicio</label>
+          <input v-model="formulario.fechaInicial" type="date" id="fechaInicial" required />
 
-          <label for="end_date">Fecha de finalización</label>
-          <input v-model="formulario.end_date" type="date" id="end_date" required />
+          <label for="fechaFinal">Fecha de finalización</label>
+          <input v-model="formulario.fechaFinal" type="date" id="fechaFinal" required />
 
-          <label for="event_type">Tipo de evento</label>
-          <select v-model="formulario.event_type" id="event_type" required>
-            <option value="Torneo">Torneo</option>
-            <option value="Actividad">Actividad</option>
-            <option value="Conferencia">Conferencia</option>
+          <label for="tipoEvento">Tipo de evento</label>
+          <select v-model="formulario.tipoEvento" id="tipoEvento" required>
+            <option value="1">Torneo</option>
+            <option value="2">Actividad</option>
+            <option value="3">Conferencia</option>
           </select>
 
-          <label for="description">Descripción</label>
-          <textarea v-model="formulario.description" id="description" required></textarea>
-
+          <label for="descripcion">Descripción</label>
+          <textarea v-model="formulario.descripcion" id="descripcion" required></textarea>
 
           <!-- Condicional para Torneo: Número de integrantes por equipo -->
-          <div v-if="formulario.event_type === 'Torneo'">
+          <div v-if="formulario.tipoEvento === 1">
             <label for="team_size">Número de integrantes por equipo</label>
             <input v-model="formulario.team_size" type="number" id="team_size" min="1" required />
           </div>
@@ -72,7 +71,6 @@
             <p v-if="imageError" class="error-message">{{ imageError }}</p>
           </div>
 
-
           <button type="submit">Guardar</button>
           <button type="button" @click="cerrarFormulario">Cancelar</button>
         </form>
@@ -80,7 +78,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 export default {
@@ -91,13 +88,13 @@ export default {
       mostrarFormulario: false,
       modoFormulario: "", // "crear" o "editar"
       formulario: {
-        id: null,
-        name: "",
-        description: "",
+        idEvento: null,
+        titulo: "",
+        descripcion: "",
         image: "",
-        start_date: "", // Fecha de inicio
-        end_date: "", // Fecha de finalización
-        event_type: "Torneo", // Tipo de evento por defecto
+        fechaInicial: "", // Fecha de inicio
+        fechaFinal: "", // Fecha de finalización
+        tipoEvento: 1, // Tipo de evento por defecto
         team_size: null, // Número de integrantes por equipo (solo para Torneo)
       },
     };
@@ -105,8 +102,8 @@ export default {
   methods: {
     validarFechas() {
       const fechaHoy = new Date();
-      const fechaInicio = new Date(this.formulario.start_date);
-      const fechaFin = new Date(this.formulario.end_date);
+      const fechaInicio = new Date(this.formulario.fechaInicial);
+      const fechaFin = new Date(this.formulario.fechaFinal);
 
       // Validar que la fecha de inicio no sea anterior a hoy
       if (fechaInicio < fechaHoy) {
@@ -131,7 +128,6 @@ export default {
           const reader = new FileReader();
           reader.onload = (e) => {
             this.formulario.image = e.target.result;
-            // this.formData.logo = file;
             this.imageError = null; // Limpiar cualquier error previo
           };
           reader.readAsDataURL(file);
@@ -141,13 +137,15 @@ export default {
         }
       }
     },
+
     triggerFileInput() {
       this.$refs.ImageInput.click();
     },
+
     async fetchEventos() {
       try {
         this.loading = true;
-        const response = await fetch("http://localhost:5000/events");
+        const response = await fetch("https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/eventos");
         const data = await response.json();
         this.eventos = data;
       } catch (error) {
@@ -156,39 +154,44 @@ export default {
         this.loading = false;
       }
     },
-    abrirFormulario(modo, id = null) {
+
+    abrirFormulario(modo, idEvento = null) {
       this.mostrarFormulario = true;
       this.modoFormulario = modo;
 
       if (modo === "editar") {
-        const evento = this.eventos.find((e) => e.id === id);
+        const evento = this.eventos.find((e) => e.idEvento === idEvento);
         this.formulario = { ...evento };
 
         // Si el tipo de evento no es "Torneo", vaciar el campo team_size
-        if (this.formulario.type !== 'Torneo') {
+        if (this.formulario.tipoEvento !== 1) {
           this.formulario.team_size = null;  // Borra el campo team_size si no es Torneo
         }
       } else {
         this.formulario = {
-          id: null,
-          name: "",
-          description: "",
+          idEvento: null,
+          titulo: "",
+          descripcion: "",
           image: "",
-          // type: "",
+          fechaInicial: "",
+          fechaFinal: "",
+          tipoEvento: 1,
           team_size: null,
         };
       }
     },
+
     cerrarFormulario() {
       this.mostrarFormulario = false;
     },
+
     async crearEvento() {
       if (!this.validarFechas()) {
         return;
       }
       try {
-        const nuevoEvento = { ...this.formulario, id: Date.now().toString() };
-        const response = await fetch("http://localhost:5000/events", {
+        const nuevoEvento = { ...this.formulario, idEvento: Date.now().toString() };
+        const response = await fetch("https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/evento", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(nuevoEvento),
@@ -201,23 +204,23 @@ export default {
         console.error("Error al crear el evento:", error);
       }
     },
+
     async actualizarEvento() {
       if (!this.validarFechas()) {
         return;
       }
       try {
-        // Eliminar el campo team_size si el evento no es un Torneo
-        if (this.formulario.event_type !== 'Torneo') {
+        if (this.formulario.tipoEvento !== 1) {
           delete this.formulario.team_size;
         }
 
-        const response = await fetch(`http://localhost:5000/events/${this.formulario.id}`, {
+        const response = await fetch(`https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/evento/${this.formulario.idEvento}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.formulario),
         });
         if (response.ok) {
-          const index = this.eventos.findIndex((e) => e.id === this.formulario.id);
+          const index = this.eventos.findIndex((e) => e.idEvento === this.formulario.idEvento);
           this.eventos.splice(index, 1, this.formulario);
           this.cerrarFormulario();
         }
@@ -225,22 +228,27 @@ export default {
         console.error("Error al actualizar el evento:", error);
       }
     },
-    async eliminarEvento(id) {
+
+    async eliminarEvento(idEvento) {
       try {
-        const response = await fetch(`http://localhost:5000/events/${id}`, { method: "DELETE" });
+        const response = await fetch(`https://54d77e44-31b5-4be6-9ea7-0ebc4d8ab30b.mock.pstmn.io/evento/${idEvento}`, {
+          method: "DELETE",
+        });
         if (response.ok) {
-          this.eventos = this.eventos.filter((evento) => evento.id !== id);
+          this.eventos = this.eventos.filter((e) => e.idEvento !== idEvento);
         }
       } catch (error) {
         console.error("Error al eliminar el evento:", error);
       }
     },
   },
-  created() {
+
+  mounted() {
     this.fetchEventos();
   },
 };
 </script>
+
 
 
 <style scoped>

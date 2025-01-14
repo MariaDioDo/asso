@@ -4,12 +4,14 @@
       <h1 class="event-title">{{ event.titulo }}</h1>
 
       <div class="event-image">
-        <!-- Aquí puedes agregar una imagen si corresponde, o dejarlo vacío -->
         <img :src="event.image" alt="Imagen del evento" />
       </div>
 
       <div class="event-description">
         <p>{{ event.descripcion }}</p>
+      </div>
+      <div class="presentador">
+        <p>Presentador: {{ event.persona.nombre }}</p>
       </div>
 
       <!-- Botones -->
@@ -55,9 +57,9 @@ export default {
   },
 
   computed: {
-    // Computada para validar si team_size es un número (si tu JSON lo tuviera, de lo contrario puedes quitarla)
+    // Computada para validar si team_size es un número 
     isTeamSizeValid() {
-      return typeof this.event?.team_size === "number"; // Asegúrate que el campo 'team_size' exista o elimínalo
+      return typeof this.event?.tamano === "number"; // Asegúrate que el campo 'team_size' exista 
     },
   },
 

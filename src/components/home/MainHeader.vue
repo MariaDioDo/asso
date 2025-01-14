@@ -19,13 +19,6 @@
           <router-link v-else to="/eventos" class="nav-link"
             :class="{ active: isActive('/eventos') }">Eventos</router-link>
         </li>
-
-
-
-        <li>
-          <router-link to="/dashboard" class="nav-link"
-            :class="{ active: isActive('/dashboard') }">Dashboard</router-link>
-        </li>
         <li>
           <router-link to="/resultados" class="nav-link"
             :class="{ active: isActive('/resultados') }">Resultados</router-link>

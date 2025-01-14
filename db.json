@@ -101,6 +101,66 @@
           "nss": "12345678901"
         }
       ]
+    },
+    {
+      "id": "2a61",
+      "eventId": "1736749633793",
+      "nombreEquipo": "Lunes",
+      "logo": null,
+      "integrantes": [
+        {
+          "username": "Maria",
+          "lastName": "Dionicio",
+          "secondLastName": "D",
+          "accountNumber": "1234567",
+          "phone": "7222419923",
+          "degree": "ICO",
+          "bloodType": "O+",
+          "email": "maria@gmail.com",
+          "personType": "Estudiante",
+          "nss": "12345678901",
+          "allergies": "Sol"
+        },
+        {
+          "username": "m",
+          "lastName": "m",
+          "secondLastName": "m",
+          "degree": "IIA",
+          "personType": "Estudiante",
+          "bloodType": "A-",
+          "email": "mariadi@gmail.com",
+          "accountNumber": "1567890",
+          "allergies": "frfr",
+          "phone": "7222222222",
+          "nss": "12345678902"
+        },
+        {
+          "username": "m",
+          "lastName": "m",
+          "secondLastName": "m",
+          "degree": "IIA",
+          "personType": "Estudiante",
+          "bloodType": "A-",
+          "email": "mariad1i1@gmail.com",
+          "accountNumber": "1567892",
+          "allergies": "frfr",
+          "phone": "7222222522",
+          "nss": "12345678122"
+        },
+        {
+          "username": "m",
+          "lastName": "m",
+          "secondLastName": "m",
+          "degree": "IIA",
+          "personType": "Estudiante",
+          "bloodType": "A-",
+          "email": "mariad1i1@gma1il.com",
+          "accountNumber": "0987531",
+          "allergies": "frfr",
+          "phone": "7222222522",
+          "nss": "12315678122"
+        }
+      ]
     }
   ]
 }
