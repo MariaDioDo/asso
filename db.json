@@ -5,7 +5,7 @@
       "name": "Futbol",
       "description": "Futbolito",
       "image": "",
-      "team_size": 2,
+      "team_size": 4,
       "start_date": "2025-01-15",
       "end_date": "2025-01-21",
       "event_type": "Torneo"
@@ -68,6 +68,39 @@
     }
   ],
   "inscripciones": [
-    
+    {
+      "id": "7438",
+      "eventId": "1736749633793",
+      "nombreEquipo": "asdads",
+      "logo": null,
+      "integrantes": [
+        {
+          "username": "Maria",
+          "lastName": "Dionicio",
+          "secondLastName": "D",
+          "accountNumber": "1234567",
+          "phone": "7222419923",
+          "degree": "ICO",
+          "bloodType": "O+",
+          "email": "maria@gmail.com",
+          "personType": "Estudiante",
+          "nss": "12345678901",
+          "allergies": "Sol"
+        },
+        {
+          "username": "hugo",
+          "lastName": "y",
+          "secondLastName": "t",
+          "degree": "ICO",
+          "personType": "Estudiante",
+          "bloodType": "O+",
+          "email": "HOGOTOLUCA@HOTMAIL.COM",
+          "accountNumber": "1720053",
+          "allergies": "Muchas",
+          "phone": "7291239863",
+          "nss": "12345678901"
+        }
+      ]
+    }
   ]
 }

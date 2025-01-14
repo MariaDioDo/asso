@@ -283,6 +283,7 @@ export default {
       }
     },
 
+    // TODO: ELIMINAR MIEMBRO
     deleteMember(index) {
       const member = this.formData.integrantes[index];
       console.log("Eliminando miembro:", member);
@@ -420,7 +421,15 @@ export default {
       } else if (!accountNumberRegex.test(this.newMember.accountNumber)) {
         this.errors.accountNumber = "El número de cuenta debe tener exactamente 7 dígitos.";
         isValid = false;
-      }
+      } 
+
+      this.formData.integrantes.forEach((integrante) => {
+          if (integrante.accountNumber === this.newMember.accountNumber){
+            this.errors.accountNumber = "El numero de cuenta no puede estar repetido";
+            isValid = false;
+          }
+      })
+
 
       return isValid;
     },
@@ -508,7 +517,7 @@ table th {
 }
 
 .action-button {
-  display: inline-block;
+  display:flex;
   /* Asegúrate de que no esté en "display: none;" */
 }
 
