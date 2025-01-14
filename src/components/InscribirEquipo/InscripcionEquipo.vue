@@ -3,34 +3,31 @@
     <h1>Inscripción al Evento: <span>{{ event.name }}</span></h1>
 
     <form @submit.prevent="submitForm" class="form-container">
-      <div class="form-group">
-        <label for="nombreEquipo">Nombre del equipo</label>
-        <input
-          id="nombreEquipo"
-          v-model="formData.nombreEquipo"
-          type="text"
-          placeholder="Ingresa el nombre de tu equipo"
-          required
-        />
-      </div>
 
       <div class="form-group file-upload">
-        <label for="logoEquipo">Agregar logo</label>
-        <input
-          id="logoEquipo"
-          type="file"
-          accept="image/*"
-          @change="handleLogoUpload"
-          required
-        />
-        <div v-if="formData.logo" class="logo-preview">
-          <img :src="formData.logoUrl" alt="Logo del equipo" />
+        <div class="logo-space" @click="triggerFileInput" :style="formData.logoUrl ? 'cursor: pointer;' : ''">
+          <div v-if="formData.logoUrl" class="logo-preview">
+            <img :src="formData.logoUrl" alt="Logo del equipo" />
+          </div>
+          <div v-else>
+            <p>Haz clic para agregar un logo</p>
+          </div>
+          <input ref="logoInput" id="logoEquipo" type="file" accept="image/*" @change="handleLogoUpload"
+            style="display: none" />
         </div>
+        <p v-if="imageError" class="error-message">{{ imageError }}</p>
       </div>
-      <p v-if="!isTeamFull" class="error-message">
-  El número de integrantes debe ser exactamente {{ event.team_size }}.
-</p>
 
+      <div class="form-group">
+        <label for="nombreEquipo">Nombre del equipo</label>
+        <input id="nombreEquipo" v-model="formData.nombreEquipo" type="text"
+          placeholder="Ingresa el nombre de tu equipo" required />
+        <p v-if="errors.username" class="error-message">{{ errors.username }}</p>
+      </div>
+
+      <p v-if="!isTeamFull && formData.integrantes.length > 0" class="error-message">
+        El número de integrantes debe ser exactamente {{ event.team_size }}.
+      </p>
 
       <div class="table-container">
         <h2>Integrantes del equipo</h2>
@@ -41,25 +38,36 @@
               <th>Apellido Paterno</th>
               <th>Apellido Materno</th>
               <th>No. Cuenta</th>
+              <th>Correo</th>
               <th>Teléfono</th>
               <th>Licenciatura</th>
+              <th>Tipo de Persona</th>
               <th>Tipo de Sangre</th>
+              <th>NSS</th>
+              <th>Alergias</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(member, index) in formData.integrantes" :key="index">
-              <td>{{ member.nombre }}</td>
-              <td>{{ member.apellidoPaterno }}</td>
-              <td>{{ member.apellidoMaterno }}</td>
-              <td>{{ member.noCuenta }}</td>
-              <td>{{ member.telefono }}</td>
-              <td>{{ member.licenciatura }}</td>
-              <td>{{ member.tipoSangre }}</td>
+              <td>{{ member.username }}</td>
+              <td>{{ member.lastName }}</td>
+              <td>{{ member.secondLastName }}</td>
+              <td>{{ member.accountNumber }}</td>
+              <td>{{ member.email }}</td>
+              <td>{{ member.phone }}</td>
+              <td>{{ member.degree }}</td>
+              <td>{{ member.personType }}</td>
+              <td>{{ member.bloodType }}</td>
+              <td>{{ member.nss }}</td>
+              <td>{{ member.allergies }}</td>
               <td>
-                <button @click="editMember(index)" class="action-button edit">✏️</button>
-                <button @click="deleteMember(index)" class="action-button delete">🗑️</button>
+                <button v-if="!isCurrentUser(member)" @click="editMember(index)" class="action-button edit">✏️
+                </button>
+                <button v-if="!isCurrentUser(member)" @click="deleteMember(index)" class="action-button delete">🗑️
+                </button>
               </td>
+
             </tr>
           </tbody>
         </table>
@@ -68,7 +76,8 @@
       <div class="button-group">
         <button type="button" @click="openModal" class="add-member-button">Agregar Integrante</button>
         <button type="button" @click="goBack" class="cancel-button">Cancelar</button>
-        <button type="submit" class="submit-button" :disabled="!isTeamFull">Inscribir Equipo</button>
+        <button type="submit" class="submit-button" :disabled="!isTeamFull"
+          :class="{ 'disabled-button': !isTeamFull }">Inscribir Equipo</button>
       </div>
     </form>
 
@@ -78,35 +87,74 @@
         <h2>Formulario de Integrante</h2>
         <form @submit.prevent="addMember">
           <div class="form-group">
-            <label for="nombre">Nombre</label>
-            <input id="nombre" v-model="newMember.nombre" type="text" required />
+            <label for="username">Nombre de usuario:</label>
+            <input type="text" id="username" v-model="newMember.username" required />
+            <p v-if="errors.username" class="error-message">{{ errors.username }}</p>
           </div>
           <div class="form-group">
-            <label for="apellidoPaterno">Apellido Paterno</label>
-            <input id="apellidoPaterno" v-model="newMember.apellidoPaterno" type="text" required />
+            <label for="lastName">Apellido Paterno:</label>
+            <input type="text" id="lastName" v-model="newMember.lastName" required />
+            <p v-if="errors.lastName" class="error-message">{{ errors.lastName }}</p>
           </div>
           <div class="form-group">
-            <label for="apellidoMaterno">Apellido Materno</label>
-            <input id="apellidoMaterno" v-model="newMember.apellidoMaterno" type="text" required />
+            <label for="secondLastName">Apellido Materno:</label>
+            <input type="text" id="secondLastName" v-model="newMember.secondLastName" required />
+            <p v-if="errors.secondLastName" class="error-message">{{ errors.secondLastName }}</p>
           </div>
           <div class="form-group">
-            <label for="noCuenta">No. Cuenta</label>
-            <input id="noCuenta" v-model="newMember.noCuenta" type="text" required />
+            <label for="email">Correo:</label>
+            <input type="text" id="email" v-model="newMember.email" required />
+            <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
           </div>
           <div class="form-group">
-            <label for="telefono">Teléfono</label>
-            <input id="telefono" v-model="newMember.telefono" type="tel" required />
+            <label for="accountNumber">Número de cuenta:</label>
+            <input type="text" id="accountNumber" v-model="newMember.accountNumber" required />
+            <p v-if="errors.accountNumber" class="error-message">{{ errors.accountNumber }}</p>
           </div>
           <div class="form-group">
-            <label for="licenciatura">Licenciatura</label>
-            <input id="licenciatura" v-model="newMember.licenciatura" type="text" required />
+            <label for="phone">Teléfono:</label>
+            <input type="text" id="phone" v-model="newMember.phone" required />
+            <p v-if="errors.phone" class="error-message">{{ errors.phone }}</p>
           </div>
           <div class="form-group">
-            <label for="tipoSangre">Tipo de Sangre</label>
-            <input id="tipoSangre" v-model="newMember.tipoSangre" type="text" required />
+            <label for="nss">NSS:</label>
+            <input type="text" id="nss" v-model="newMember.nss" required />
+            <p v-if="errors.nss" class="error-message">{{ errors.nss }}</p>
           </div>
-          <button type="submit" class="submit-button">Añadir</button>
-          <button type="button" @click="closeModal" class="cancel-button">Cancelar</button>
+          <div class="form-group">
+            <label for="allergies">Alergias:</label>
+            <input type="text" id="allergies" v-model="newMember.allergies" required />
+            <p v-if="errors.allergies" class="error-message">{{ errors.allergies }}</p>
+          </div>
+
+          <!-- Campo para Tipo de Persona -->
+          <div class="form-group">
+            <label for="personType">Tipo de Persona:</label>
+            <select id="personType" v-model="newMember.personType" required>
+              <option v-for="type in personTypes" :key="type" :value="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="degree">Licenciatura:</label>
+            <select id="degree" v-model="newMember.degree" required>
+              <option v-for="degree in degrees" :key="degree" :value="degree">{{ degree }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="bloodType">Tipo de Sangre:</label>
+            <select id="bloodType" v-model="newMember.bloodType" required>
+              <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <div class="buttons-editar">
+            <button type="submit" class="submit-button">
+              {{ isEditing ? 'Guardar' : 'Añadir' }}
+            </button>
+            <button type="button" @click="closeModal" class="cancel-button">Cancelar</button>
+          </div>
         </form>
       </div>
     </div>
@@ -114,102 +162,87 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   data() {
     return {
-      event: {}, // Detalles del evento
+      //dif
+      event: {},
       formData: {
         nombreEquipo: '',
+        logoUrl: null,
         logo: null,
-        logoUrl: null, 
         integrantes: [],
-        correoContacto: '',
       },
       newMember: {
-        nombre: '',
-        apellidoPaterno: '',
-        apellidoMaterno: '',
-        noCuenta: '',
-        telefono: '',
-        licenciatura: '',
-        tipoSangre: '',
+        username: "",
+        lastName: "",
+        secondLastName: "",
+        degree: "",
+        personType: "",
+        bloodType: "",
+        email: "",
+        accountNumber: "",
+        allergies: "",
+        phone: "",
+        nss: "",
       },
-      memberFields: [
-        { id: 'nombre', label: 'Nombre', model: 'nombre', type: 'text', placeholder: 'Nombre' },
-        { id: 'apellidoPaterno', label: 'Apellido Paterno', model: 'apellidoPaterno', type: 'text', placeholder: 'Apellido Paterno' },
-        { id: 'apellidoMaterno', label: 'Apellido Materno', model: 'apellidoMaterno', type: 'text', placeholder: 'Apellido Materno' },
-        { id: 'noCuenta', label: 'No. Cuenta', model: 'noCuenta', type: 'text', placeholder: 'Número de Cuenta' },
-        { id: 'telefono', label: 'Teléfono', model: 'telefono', type: 'tel', placeholder: 'Teléfono' },
-        { id: 'licenciatura', label: 'Licenciatura', model: 'licenciatura', type: 'text', placeholder: 'Licenciatura' },
-        { id: 'tipoSangre', label: 'Tipo de Sangre', model: 'tipoSangre', type: 'text', placeholder: 'Tipo de Sangre' },
-      ],
       showModal: false,
       errors: {},
+      isEditing: false,
+      degrees: ["ICO", "IEL", "IME", "ICI", "ISES", "IIA"],
+      personTypes: ["Estudiante", "Profesor", "Academico"],
+      bloodTypes: ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"],
     };
   },
   computed: {
+    ...mapGetters(['getUser']),
     isTeamFull() {
-    return this.event.team_size 
-      ? this.formData.integrantes.length === this.event.team_size
-      : true;
-  },
+      if (!this.event || !this.event.team_size) {
+        return false;
+      }
+      return this.isEditing ? false : this.formData.integrantes.length >= this.event.team_size;
+    }
+
   },
   created() {
     const eventId = this.$route.params.id;
     this.fetchEvent(eventId);
   },
+  mounted() {
+    this.fetchEvent(this.$route.params.id).then(() => {
+      if (this.event.team_size && this.getUser) {
+        this.formData.integrantes.unshift({
+          username: this.getUser.username,
+          lastName: this.getUser.lastName,
+          secondLastName: this.getUser.secondLastName,
+          accountNumber: this.getUser.accountNumber,
+          phone: this.getUser.phone,
+          degree: this.getUser.degree,
+          bloodType: this.getUser.bloodType,
+          email: this.getUser.email,
+          personType: this.getUser.personType,
+          nss: this.getUser.nss,
+          allergies: this.getUser.allergies,
+        });
+      } else {
+        console.error('Error: evento o usuario no cargados correctamente.');
+      }
+    });
+  },
+
   methods: {
-    async fetchEvent(id) {
-      try {
-        const response = await fetch(`http://localhost:5000/events/${id}`);
-        const data = await response.json();
-        if (data) {
-          this.event = data;
-        } else {
-          this.error = 'Evento no encontrado.';
-        }
-      } catch (err) {
-        this.error = 'Error al cargar el evento: ' + err.message;
-      }
-    },
-    handleLogoUpload(event) {
-      const file = event.target.files[0];
-      if (file && file.type.startsWith('image/')) {
-        this.formData.logo = file;
-        this.formData.logoUrl = URL.createObjectURL(file); // Crear URL para la imagen
-      } else {
-        alert('Por favor, selecciona un archivo de imagen válido.');
-        event.target.value = '';
-      }
-    },
-    addMember() {
-      this.errors = {};
-      const valid = Object.values(this.newMember).every((field) => field);
-      if (valid) {
-        this.formData.integrantes.push({ ...this.newMember });
-        this.newMember = {
-          nombre: '',
-          apellidoPaterno: '',
-          apellidoMaterno: '',
-          noCuenta: '',
-          telefono: '',
-          licenciatura: '',
-          tipoSangre: '',
-        };
-        this.closeModal();
-      } else {
-        alert('Por favor, completa todos los campos.');
-      }
-    },
-    editMember(index) {
-      this.newMember = { ...this.formData.integrantes[index] };
-      this.formData.integrantes.splice(index, 1);
-      this.openModal();
-    },
-    deleteMember(index) {
-      this.formData.integrantes.splice(index, 1);
-    },
+
     async submitForm() {
+      if (!this.event.team_size) {
+        alert('El tamaño del equipo no está definido. Por favor, inténtalo más tarde.');
+        return;
+      }
+      if (this.formData.integrantes.length !== this.event.team_size) {
+        alert(`El equipo debe tener exactamente ${this.event.team_size} integrantes.`);
+        return;
+      }
       try {
         const response = await fetch('http://localhost:5000/inscripciones', {
           method: 'POST',
@@ -236,15 +269,169 @@ export default {
         this.error = 'Error al procesar la inscripción: ' + err.message;
       }
     },
-    goBack() {
-      this.$router.push(`/eventos/${this.event.id}`);
+
+    editMember(index) {
+      if (index >= 0 && index < this.formData.integrantes.length) {
+        this.isEditing = true;
+        console.log('Editando miembro en el índice:', index);
+
+        const memberToEdit = this.formData.integrantes[index];
+        console.log('Miembro a editar:', memberToEdit);
+
+        // Rellenar el formulario con los datos del miembro
+        this.newMember = { ...memberToEdit };
+
+        // Abrir el modal
+        this.openModal();
+      } else {
+        console.error("Índice de miembro no válido:", index);
+        // Aquí podrías agregar un mensaje de error visual si lo deseas
+      }
     },
+
+    deleteMember(index) {
+      const member = this.formData.integrantes[index];
+      // Aquí puedes definir la lógica para eliminar un integrante
+      console.log("Eliminando miembro:", member);
+    },
+
+    isCurrentUser(member) {
+      return member.accountNumber === this.getUser?.accountNumber;
+    },
+
+    triggerFileInput() {
+      this.$refs.logoInput.click();
+    },
+
+    async fetchEvent(id) {
+      try {
+        const response = await fetch(`http://localhost:5000/events/${id}`);
+        const data = await response.json();
+        if (data && data.team_size) {
+          this.event = data;
+        } else {
+          console.error('La respuesta del servidor no contiene team_size:', data);
+        }
+      } catch (error) {
+        console.error('Error al obtener el evento:', error);
+      }
+    },
+
+    handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+        if (validImageTypes.includes(file.type)) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.formData.logoUrl = e.target.result;
+            this.imageError = null; // Limpiar cualquier error previo
+          };
+          reader.readAsDataURL(file);
+        } else {
+          this.imageError = 'Por favor, selecciona un archivo de imagen válido (JPEG, PNG, GIF, BMP, WebP).';
+          event.target.value = ''; // Limpiar archivo seleccionado
+        }
+      }
+    },
+
     openModal() {
       this.showModal = true;
+      this.errors = {};
     },
+
     closeModal() {
       this.showModal = false;
+      this.errors = {};  // Reset errors on close
     },
+
+    addMember() {
+      if (this.isEditing) {
+        // Si estamos editando, no agregamos un nuevo integrante, solo actualizamos el existente
+        const indexToEdit = this.formData.integrantes.findIndex(member => member.accountNumber === this.newMember.accountNumber);
+        if (indexToEdit !== -1) {
+          this.formData.integrantes[indexToEdit] = { ...this.newMember };
+          console.log("Miembro editado:", this.formData.integrantes[indexToEdit]);
+          this.closeModal();  // Cerrar el modal después de editar
+        }
+      } else {
+        // Si no estamos editando, validamos y agregamos un nuevo integrante
+        if (this.validateNewMember()) {
+          if (this.formData.integrantes.length < this.event.team_size) {
+            this.formData.integrantes.push({ ...this.newMember });
+            console.log("Miembro agregado:", this.formData.integrantes);
+            this.closeModal();  // Cerrar el modal después de agregar
+          } else {
+            alert(`El equipo ya tiene el máximo permitido (${this.event.team_size} integrantes).`);
+          }
+        } else {
+          // Si la validación falla, no cerramos el modal
+          console.log("Errores de validación:", this.errors);
+        }
+      }
+    },
+
+    validateNewMember() {
+      let isValid = true;
+      this.errors = {}; // Limpiar los errores previos
+      console.log('Validando el formulario...');
+
+      // Validación nombre de usuario
+      const lettersRegex = /^[A-Za-z\s]+$/;
+      if (!this.newMember.username || !lettersRegex.test(this.newMember.username)) {
+        this.errors.username = "El nombre de usuario solo debe contener letras.";
+        isValid = false;
+      }
+      // Validar alergias (opcional, pero solo letras si se ingresa)
+      if (this.newMember.allergies && !lettersRegex.test(this.newMember.allergies)) {
+        this.errors.allergies = "Las alergias deben contener solo letras.";
+        isValid = false;
+      }
+
+      // Validación apellidos
+      if (!this.newMember.lastName || !lettersRegex.test(this.newMember.lastName)) {
+        this.errors.lastName = "El apellido paterno solo debe contener letras.";
+        isValid = false;
+      }
+      if (!this.newMember.secondLastName || !lettersRegex.test(this.newMember.secondLastName)) {
+        this.errors.secondLastName = "El apellido materno solo debe contener letras.";
+        isValid = false;
+      }
+
+      // Validación email
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+      if (!this.newMember.email || !emailRegex.test(this.newMember.email)) {
+        this.errors.email = "El correo electrónico debe ser válido.";
+        isValid = false;
+      }
+
+      // Validación teléfono
+      const phoneRegex = /^\d{10}$/;
+      if (!this.newMember.phone || !phoneRegex.test(this.newMember.phone)) {
+        this.errors.phone = "El número de teléfono debe contener 10 dígitos numéricos.";
+        isValid = false;
+      }
+
+      // Validación NSS
+      const nssRegex = /^\d{11}$/;
+      if (!this.newMember.nss || !nssRegex.test(this.newMember.nss)) {
+        this.errors.nss = "El NSS debe contener 11 dígitos.";
+        isValid = false;
+      }
+
+      // Validar número de cuenta (7 dígitos numéricos)
+      const accountNumberRegex = /^\d{7}$/;
+      if (!this.newMember.accountNumber) {
+        this.errors.accountNumber = "El número de cuenta es obligatorio.";
+        isValid = false;
+      } else if (!accountNumberRegex.test(this.newMember.accountNumber)) {
+        this.errors.accountNumber = "El número de cuenta debe tener exactamente 7 dígitos.";
+        isValid = false;
+      }
+
+      return isValid;
+    },
+
   },
 };
 </script>
@@ -264,9 +451,13 @@ export default {
   background-color: var(--gray);
   color: var(--text-gray);
   border-radius: 10px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
 }
 
-h1, h2 {
+h1,
+h2 {
   color: var(--primary-green);
 }
 
@@ -297,6 +488,7 @@ input[type='file'] {
   background-color: var(--light-green);
 }
 
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -318,7 +510,15 @@ table th {
   border: none;
   cursor: pointer;
   font-size: 16px;
+  background: none;
+  padding: 5px;
 }
+
+.action-button {
+  display: inline-block;
+  /* Asegúrate de que no esté en "display: none;" */
+}
+
 
 .action-button.edit {
   color: var(--primary-green);
@@ -330,14 +530,21 @@ table th {
 
 .button-group {
   display: flex;
-  justify-content: center; 
-  gap: 15px; 
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.buttons-modal {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
   margin-top: 20px;
 }
 
 .add-member-button,
 .submit-button {
-  background-color: #388e3c; 
+  background-color: #388e3c;
   color: white;
   padding: 12px 30px;
   font-size: 16px;
@@ -363,11 +570,11 @@ button:hover {
 
 .add-member-button:hover,
 .submit-button:hover {
-  background-color: #2c6f2b; 
+  background-color: #2c6f2b;
 }
 
 .cancel-button:hover {
-  background-color: #bdbdbd; 
+  background-color: #bdbdbd;
 }
 
 
@@ -381,17 +588,96 @@ button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: auto;
+  /* Asegura que el contenido pueda desplazarse si excede la pantalla */
 }
 
 .modal-content {
   background-color: white;
-  padding: 20px;
+  padding: 30px;
   border-radius: 10px;
-  width: 400px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 95%;
+  overflow-y: auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: 400px;
+  }
+}
+
 .error-message {
-  color: rgb(15, 71, 3);
+  color: rgb(232, 45, 51);
   font-size: 0.9em;
   margin-top: 10px;
+}
+
+.parent-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.file-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.logo-space {
+  width: 200px;
+  height: 200px;
+  border: 2px solid var(--dark-green);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.logo-space p {
+  text-align: center;
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.action-button {
+  padding: 10px 15px;
+  margin: 10px 0;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.action-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+  /* Cambia el cursor a "no permitido" */
+}
+
+.info-message {
+  color: #555;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-container {
+  margin-top: 20px;
 }
 </style>

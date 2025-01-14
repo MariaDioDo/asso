@@ -1,23 +1,13 @@
 {
   "events": [
     {
-      "id": "1736703712303",
-      "name": "A luchar",
-      "description": "Torneo de ajedrez",
-      "image": "/images/logo.jpg",
-      "start_date": "2025-01-01",
-      "end_date": "2025-01-16",
-      "event_type": "Torneo",
-      "team_size": 1
-    },
-    {
-      "id": "1736703804059",
+      "id": "1736749633793",
       "name": "Futbol",
-      "description": "sociedad",
-      "image": "/images/1.jpg",
-      "team_size": 11,
-      "start_date": "2025-01-09",
-      "end_date": "2025-01-23",
+      "description": "Futbolito",
+      "image": "",
+      "team_size": 2,
+      "start_date": "2025-01-15",
+      "end_date": "2025-01-21",
       "event_type": "Torneo"
     }
   ],
@@ -41,10 +31,10 @@
       "id": "e85c",
       "username": "Meli",
       "lastName": "Dioni",
-      "secondLastName": "Domi",
+      "secondLastName": "Dominguez",
       "degree": "IME",
       "personType": "Estudiante",
-      "bloodType": "A-",
+      "bloodType": "B+",
       "email": "meli@gmail.com",
       "password": "Meli1234",
       "accountNumber": "1234568",
@@ -58,7 +48,7 @@
       "id": "90c0",
       "username": "Promotor",
       "lastName": "Promotores",
-      "secondLastName": "Depo",
+      "secondLastName": "Deportivo",
       "email": "promotor@deportivo.com",
       "password": "Promotor1",
       "accountNumber": "1234567",
@@ -78,49 +68,6 @@
     }
   ],
   "inscripciones": [
-    {
-      "id": "b347",
-      "eventId": "1736703712303",
-      "nombreEquipo": "Equipo 1",
-      "logo": "Meli.jpg",
-      "integrantes": [],
-      "correoContacto": ""
-    },
-    {
-      "id": "7ae2",
-      "eventId": "1736703712303",
-      "nombreEquipo": "dedede",
-      "logo": "Meli.jpg",
-      "integrantes": [
-        {
-          "nombre": "dede",
-          "apellidoPaterno": "dede",
-          "apellidoMaterno": "dede",
-          "noCuenta": "dede",
-          "telefono": "dde",
-          "licenciatura": "dwed",
-          "tipoSangre": "de"
-        }
-      ],
-      "correoContacto": ""
-    },
-    {
-      "id": "7b73",
-      "eventId": "1736703712303",
-      "nombreEquipo": "12",
-      "logo": "Meli.jpg",
-      "integrantes": [
-        {
-          "nombre": "1",
-          "apellidoPaterno": "1",
-          "apellidoMaterno": "1",
-          "noCuenta": "1",
-          "telefono": "1",
-          "licenciatura": "1",
-          "tipoSangre": "1"
-        }
-      ],
-      "correoContacto": ""
-    }
+    
   ]
 }
